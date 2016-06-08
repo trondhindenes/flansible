@@ -18,6 +18,7 @@ import time
 from flask_restful import Resource, Api
 from ConfigParser import SafeConfigParser
 from flask import Flask, request, render_template, session, flash, redirect, url_for, jsonify
+from flask_httpauth import HTTPBasicAuth
 from celery import Celery
 import subprocess
 import time
@@ -29,6 +30,7 @@ from ModelClasses import AnsibleCommandModel, AnsibleRequestResultModel, Ansible
 
 
 app = Flask(__name__)
+auth = HTTPBasicAuth()
 
 
 config = SafeConfigParser()
@@ -42,6 +44,15 @@ api = swagger.docs(Api(app), apiVersion='0.1')
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
+
+
+@auth.verify_password
+def verify_password(username, password):
+    result = False
+    if username == config.get("Default", "username"):
+        if password == config.get("Default", "password"):
+            result = True
+    return result
 
 
 class StartTask(Resource):
@@ -78,6 +89,7 @@ class RunAnsibleCommand(Resource):
             }
           ]
     )
+    @auth.login_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('module', type=str, help='module name', required=True)
