@@ -1,5 +1,10 @@
-import ptvsd
-ptvsd.enable_attach(secret='my_secret', address = ('0.0.0.0', 3000))
+import platform
+
+if platform.system() == 'Windows':
+    pass
+else:
+    import ptvsd
+    ptvsd.enable_attach(secret='my_secret', address = ('0.0.0.0', 3000))
 
 from datetime import datetime
 from flask import render_template

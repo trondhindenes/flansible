@@ -33,7 +33,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="config.ini" />
-    <Content Include="test.txt" />
+    <Content Include="Utils\debug.sh" />
+    <Content Include="Utils\test.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Utils\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
