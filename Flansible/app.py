@@ -112,10 +112,10 @@ class AnsibleTaskStatus(Resource):
         task = do_long_running_task.AsyncResult(task_id)
         result = task.info['result']
         #result_out = task.info.replace('\n', "<br>")
-        result = result.replace('\n', '<br>')
+        #result = result.replace('\n', '<br>')
         #return result, 200, {'Content-Type': 'text/html; charset=utf-8'}
         resp = app.make_response((result, 200))
-        resp.headers['content-type'] = 'text/html'
+        resp.headers['content-type'] = 'text/plain'
         return resp
 
 api.add_resource(AnsibleTaskStatus, '/ansibletaskstatus/<string:task_id>')
