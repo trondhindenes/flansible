@@ -54,15 +54,6 @@ def verify_password(username, password):
             result = True
     return result
 
-
-class StartTask(Resource):
-    def get(self):
-        task_result = do_long_running_task.apply_async()
-        result = {'task_id': task_result.id}
-        return result
-
-api.add_resource(StartTask, '/api/starttask')
-
 class RunAnsibleCommand(Resource):
     @swagger.operation(
         notes='Run ad-hoc Ansible command',
@@ -94,9 +85,11 @@ class RunAnsibleCommand(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('module', type=str, help='module name', required=True)
         parser.add_argument('extra_args', type=dict, help='extra args', required=False)
+        parser.add_argument('host_filter', type=str, help='host filter', required=False)
         args = parser.parse_args()
         req_module = args['module']
         extra_args = args['extra_args']
+        host_filter = args['host_filter']
         extra_args_string = ''
         if extra_args:
             counter = 1
@@ -110,9 +103,11 @@ class RunAnsibleCommand(Resource):
                 extra_args_string += opt_string
                 counter += 1
             extra_args_string += '"'
+        if not host_filter:
+            host_filter = "localhost"
 
 
-        command = str.format("ansible -m {0} {1} localhost", req_module, extra_args_string)
+        command = str.format("ansible -m {0} {1} {2}", req_module, extra_args_string, host_filter)
         task_result = do_long_running_task.apply_async([command])
         result = {'task_id': task_result.id}
         return result
@@ -121,6 +116,7 @@ api.add_resource(RunAnsibleCommand, '/api/ansiblecommand')
 
 
 class AnsibleTaskStatus(Resource):
+    @auth.login_required
     def get(self, task_id):
         task = do_long_running_task.AsyncResult(task_id)
         result = task.info['result']
