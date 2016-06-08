@@ -1,3 +1,6 @@
+import ptvsd
+ptvsd.enable_attach(secret='my_secret', address = ('0.0.0.0', 3000))
+
 from datetime import datetime
 from flask import render_template
 from celery import Celery
@@ -13,6 +16,8 @@ from flask_restful import Resource, Api, reqparse
 from flask_restful_swagger import swagger
 import sys
 from ModelClasses import AnsibleCommandModel, AnsibleRequestResultModel
+
+
 
 app = Flask(__name__)
 
