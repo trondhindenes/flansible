@@ -111,7 +111,7 @@ class AnsibleTaskStatus(Resource):
         task = do_long_running_task.AsyncResult(task_id)
         result = task.info['result']
         #result_out = task.info.replace('\n', "<br>")
-        result.replace("\n","<br>")
+        result = result.replace('\n',"<br>")
         return result
 
 
