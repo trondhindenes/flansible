@@ -17,10 +17,10 @@ from flask import Flask, request, render_template, session, flash, redirect, url
 from celery import Celery
 import subprocess
 import time
-from flask_restful import Resource, Api, reqparse
+from flask_restful import Resource, Api, reqparse, fields
 from flask_restful_swagger import swagger
 import sys
-from ModelClasses import AnsibleCommandModel, AnsibleRequestResultModel
+from ModelClasses import AnsibleCommandModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 
 
 
@@ -76,9 +76,26 @@ class RunAnsibleCommand(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('module', type=str, help='module name', required=True)
+        parser.add_argument('extra_args', type=dict, help='extra args', required=False)
         args = parser.parse_args()
         req_module = args['module']
-        command = str.format("ansible -m {0} localhost", req_module)
+        extra_args = args['extra_args']
+        extra_args_string = ''
+        if extra_args:
+            counter = 1
+            extra_args_string += '-a"'
+            for key in extra_args.keys():
+                if counter < len(extra_args):
+                    spacer = " "
+                else:
+                    spacer = ""
+                opt_string = str.format("{0}={1}{2}",key,extra_args[key], spacer)
+                extra_args_string += opt_string
+                counter += 1
+            extra_args_string += '"'
+
+
+        command = str.format("ansible -m {0} {1} localhost", req_module, extra_args_string)
         task_result = do_long_running_task.apply_async([command])
         result = {'task_id': task_result.id}
         return result
