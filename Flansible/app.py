@@ -9,6 +9,7 @@ else:
     except:
         pass
 
+import os
 from datetime import datetime
 from flask import render_template
 from celery import Celery
@@ -111,7 +112,7 @@ class AnsibleTaskStatus(Resource):
         task = do_long_running_task.AsyncResult(task_id)
         result = task.info['result']
         #result_out = task.info.replace('\n', "<br>")
-        #result = result.replace('\n',"<br>")
+        result = result.replace('\n',os.linesep)
         return result
 
 
