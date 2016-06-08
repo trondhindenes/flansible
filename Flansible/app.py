@@ -112,7 +112,7 @@ class AnsibleTaskStatus(Resource):
         task = do_long_running_task.AsyncResult(task_id)
         result = task.info['result']
         #result_out = task.info.replace('\n', "<br>")
-        result = result.replace('\n',os.linesep)
+        result = result.replace('\n', '\r\n')
         return result, 200, {'Content-Type': 'text/html; charset=utf-8'}
 
 
