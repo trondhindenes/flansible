@@ -33,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="config.ini" />
+    <Content Include="Utils\attach.txt" />
     <Content Include="Utils\debug.sh" />
     <Content Include="Utils\test.txt" />
   </ItemGroup>
