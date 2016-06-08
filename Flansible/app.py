@@ -55,6 +55,7 @@ api.add_resource(StartTask, '/api/starttask')
 class RunAnsibleCommand(Resource):
     @swagger.operation(
         notes='Run ad-hoc Ansible command',
+        nickname='ansiblecommand',
         responseClass=AnsibleRequestResultModel.__name__,
         parameters=[
             {
