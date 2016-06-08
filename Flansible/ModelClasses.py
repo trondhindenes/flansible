@@ -2,8 +2,16 @@ from flask_restful_swagger import swagger
 
 @swagger.model
 class AnsibleCommandModel:
-    def __init__(self, module, extra_args={}):
-        pass
+    resource_fields = {
+        'module': fields.String,
+        'extra_args': fields.Nested(AnsibleExtraArgsModel.resource_fields),
+    }
+
+class AnsibleExtraArgsModel:
+    resource_fields = {
+        'arg_name' : fields.String,
+        'arg_value' : fields.String,
+        }
 
 @swagger.model
 class AnsibleRequestResultModel:
