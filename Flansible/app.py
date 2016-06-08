@@ -54,11 +54,11 @@ class RunAnsibleCommand(Resource):
           ],
         responseMessages=[
             {
-              "code": 201,
-              "message": "Created. The URL of the created blueprint should be in the Location header"
+              "code": 200,
+              "message": "Ansible command started"
             },
             {
-              "code": 405,
+              "code": 400,
               "message": "Invalid input"
             }
           ]
@@ -109,4 +109,4 @@ def do_long_running_task(self, cmd):
             return {'result': result}
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', use_reloader=False)
+    app.run(debug=True, host='0.0.0.0', use_reloader=False, port=80)
