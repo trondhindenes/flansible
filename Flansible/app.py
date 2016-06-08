@@ -3,8 +3,11 @@ import platform
 if platform.system() == 'Windows':
     pass
 else:
-    import ptvsd
-    ptvsd.enable_attach(secret='my_secret', address = ('0.0.0.0', 3000))
+    try:
+        import ptvsd
+        ptvsd.enable_attach(secret='my_secret', address = ('0.0.0.0', 3000))
+    except:
+        pass
 
 from datetime import datetime
 from flask import render_template
