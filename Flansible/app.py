@@ -105,7 +105,7 @@ class RunAnsibleCommand(Resource):
         result = {'task_id': task_result.id}
         return result
 
-api.add_resource(RunAnsibleCommand, '/ansiblecommand')
+api.add_resource(RunAnsibleCommand, '/api/ansiblecommand')
 
 
 class AnsibleTaskStatus(Resource):
@@ -119,7 +119,7 @@ class AnsibleTaskStatus(Resource):
         resp.headers['content-type'] = 'text/plain'
         return resp
 
-api.add_resource(AnsibleTaskStatus, '/ansibletaskstatus/<string:task_id>')
+api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')
 
 @celery.task(bind=True)
 def do_long_running_task(self, cmd):
