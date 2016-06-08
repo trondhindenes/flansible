@@ -1,0 +1,1 @@
+tcp://my_secret@thansible01.westeurope.cloudapp.azure.com:3000
