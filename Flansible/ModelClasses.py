@@ -14,6 +14,7 @@ class AnsibleCommandModel:
     resource_fields = {
         'module': fields.String,
         'extra_args': fields.List(fields.Nested(AnsibleExtraArgsModel.resource_fields)),
+        'host_filter': fields.String,
     }
 
 
