@@ -113,7 +113,7 @@ class AnsibleTaskStatus(Resource):
         result = task.info['result']
         #result_out = task.info.replace('\n', "<br>")
         result = result.replace('\n',os.linesep)
-        return Flask.make_response(app, result, 200)
+        return result, 200, {'Content-Type': 'text/html; charset=utf-8'}
 
 
 api.add_resource(AnsibleTaskStatus, '/ansibletaskstatus/<string:task_id>')
