@@ -169,7 +169,7 @@ class RunAnsiblePlaybook(Resource):
         playbook_dir = args['playbook_dir']
         playbook = args['playbook']
 
-        playbook_full_path = playbook_dir + playbook
+        playbook_full_path = playbook_dir + "/" + playbook
         playbook_full_path = playbook_full_path.replace("//","/")
 
         if not os.path.exists(playbook_dir):
