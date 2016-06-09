@@ -69,16 +69,20 @@ TODO
 
 
 ### how it looks
-1. Execute an Ansible command. The returning task_id is used to check status
+1. Execute an Ansible command. The returning task_id is used to check status:
+
 ![alt text](http://s33.postimg.org/eucfmo0un/2016_06_09_03_12_32_Postman.jpg "Execute the thing")
 
 2. Use the returned task_id to get the Ansible job output:
+
 ![alt text](http://s33.postimg.org/7ir75l7wv/2016_06_09_03_13_04_Postman.jpg "Get output")
 
 3. Use Flower to check job statuses:
+
 ![alt text](http://s33.postimg.org/wnn9g4dov/2016_06_09_03_19_09_Celery_Flower.png "Get job status")
 
-4. Use Swagger to get a feel for the api (this is very much work in progress)
+4. Use Swagger to get a feel for the api (this is very much work in progress):
+
 ![alt text](http://s33.postimg.org/fq2hivpe7/2016_06_09_03_20_49_Swagger_UI.png "Swagger spec")
 
 
