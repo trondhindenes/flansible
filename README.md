@@ -3,7 +3,7 @@
 
 ---
 
-Flansible is a very simple rest api for executing Ansible ad-hoc-commands and (later) playbooks. It it _not_ a replacement for [Ansible Tower](https://www.ansible.com/tower).
+Flansible is a very simple rest api for executing Ansible ad-hoc-commands and playbooks. It it _not_ a replacement for [Ansible Tower](https://www.ansible.com/tower).
 
 Flansible is written in [Flask](http://flask.pocoo.org/), and uses [celery](http://www.celeryproject.org/) for async task execution and optionally [flower](http://flower.readthedocs.io/en/latest/features.html) for real-time monitoring of celery.
 
@@ -26,6 +26,7 @@ Celery requires a datastore, either Redis or RabbitMQ.
 The config.ini file should be pretty self-explanatory. It's probably a good idea to remove lines 5-10 in app.py, as that's only a debug definition which probably won't make sense to you.
 
 If you want to run the flask webserver on port 80 like I'm doing without running as root, you need to allow python to use priveliged ports:
+
 `sudo setcap 'cap_net_bind_service=+ep' /usr/bin/python2.7`
 
 ### Setup
@@ -100,6 +101,8 @@ where
 * extra_args: array of objects containing any extra vars
 
 ### Usage: Playbooks
+Issue a POST to `http://<hostname>/api/ansibleplaybook` with contenttype `Application/Json`.
+
 This is an example of playbook execution:
 
 ```json
@@ -112,12 +115,23 @@ This is an example of playbook execution:
 
 Flansible will verify that the playbook dir/file exists before submitting the job for execution.
 
+### Usage: Getting status
+both ansibleplaybook and ansiblecommand will return a task_id value. That value can be used to check the 
+status of the job. This is done by issuing a GET to 
+`http://<hostname>/api/ansibletaskstatus/<task_id>` with contenttype `Application/Json`.
+
+### Usage: Getting output
+When the status reports something other than "PROGRESS", the following can be used to get the command/playbook's output: 
+status of the job. This is done by issuing a GET to 
+`http://<hostname>/api/ansibletaskoutput/<task_id>` with contenttype `Application/Json`.
+The output from this call should resemble what you see in bash when executing Ansible interactively.
+
 ### how it looks
 * Execute an Ansible command (`/api/ansiblecommand`). The returning task_id is used to check status: 
 
 ![alt text](http://s33.postimg.org/eucfmo0un/2016_06_09_03_12_32_Postman.jpg "Execute the thing")
 
-* Use the returned task_id to get the Ansible job output (`/api/ansibletaskstatus/<task-id>`):
+* Use the returned task_id to get the Ansible job output (`/api/ansibletaskoutput/<task-id>`):
 
 ![alt text](http://s33.postimg.org/7ir75l7wv/2016_06_09_03_13_04_Postman.jpg "Get output")
 

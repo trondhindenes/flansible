@@ -12,7 +12,8 @@ class AnsibleExtraArgsModel:
 @swagger.model
 @swagger.nested(
    module_args=AnsibleExtraArgsModel.__name__,
-   extra_vars=AnsibleExtraArgsModel.__name__)
+   extra_vars=AnsibleExtraArgsModel.__name__
+   )
 class AnsibleCommandModel:
     resource_fields = {
         'host_pattern': fields.String,
@@ -29,8 +30,8 @@ class AnsibleCommandModel:
 
 @swagger.model
 @swagger.nested(
-   module_args=AnsibleExtraArgsModel.__name__,
-   extra_vars=AnsibleExtraArgsModel.__name__)
+   extra_vars=AnsibleExtraArgsModel.__name__
+   )
 class AnsiblePlaybookModel:
     resource_fields = {
         'playbook_dir': fields.String,
