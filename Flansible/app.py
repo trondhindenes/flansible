@@ -168,7 +168,7 @@ class RunAnsiblePlaybook(Resource):
 api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
     
 
-class AnsibleTaskStatus(Resource):
+class AnsibleTaskOutput(Resource):
     @auth.login_required
     def get(self, task_id):
         task = do_long_running_task.AsyncResult(task_id)
@@ -184,7 +184,15 @@ class AnsibleTaskStatus(Resource):
         resp.headers['content-type'] = 'text/plain'
         return resp
 
-api.add_resource(AnsibleTaskStatus, '/api/ansibletaskoutput/<string:task_id>')
+api.add_resource(AnsibleTaskOutput, '/api/ansibletaskoutput/<string:task_id>')
+
+class AnsibleTaskStatus(Resource):
+    @auth.login_required
+    def get(self, task_id):
+        task = do_long_running_task.AsyncResult(task_id)
+        return  task.info
+
+api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')
 
 @celery.task(bind=True)
 def do_long_running_task(self, cmd):
