@@ -165,6 +165,23 @@ class RunAnsiblePlaybook(Resource):
         parser.add_argument('forks', type=int, help='forks', required=False)
         parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
 
+        playbook_dir = args['playbook_dir']
+        playbook = args['playbook']
+
+        playbook_full_path = playbook_dir + playbook
+        playbook_full_path = playbook_full_path.replace("//","/")
+
+        if not os.path.exists(playbook_dir):
+            resp = app.make_response((str.format("Directory not found: {0}", playbook_dir), 404))
+            return resp
+        if not os.path.isdir(playbook_dir):
+            resp = app.make_response((str.format("Not a directory: {0}", playbook_dir), 404))
+            return resp
+        if not os.path.exists(playbook_full_path):
+            resp = app.make_response((str.format("Playbook not found in folder. Path does not exist: {0}", playbook_full_path), 404))
+            return resp
+        
+
 api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
     
 
