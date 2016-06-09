@@ -4,8 +4,8 @@
       "user": "admin",
       "password": "admin",
       "inventories": [
-        "/etc/ansible/hosts",
-        "/some/folder/dev"
+        "username admin has implicit access to all inventories",
+        "noneed to specify anything here"
       ]
 
     },
