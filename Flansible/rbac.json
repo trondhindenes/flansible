@@ -13,7 +13,8 @@
       "user": "devadmin",
       "password": "devpassword",
       "inventories": [
-        "/some/folder/dev"
+        "/some/folder/dev",
+        "/home/thadministrator/hosts"
       ]
 
     }
