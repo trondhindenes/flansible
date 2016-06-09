@@ -149,7 +149,7 @@ class RunAnsibleCommand(Resource):
                 resp = app.make_response((str.format("User does not have access to inventory {0}", inventory), 403))
                 return resp
 
-            inventory = str.format(" -i {0}", inventory)
+        inventory = str.format(" -i {0}", inventory)
         if forks:
             fork_string = str.format('-f {0}', str(forks))
         else:
