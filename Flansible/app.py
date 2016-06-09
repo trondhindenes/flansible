@@ -146,7 +146,7 @@ class RunAnsibleCommand(Resource):
             become_user_string = ''
 
 
-        command = str.format("ansible -m {0} {1} {2} {3}{4}{5}{6}{7}", req_module, extra_args_string, fork_string, host_filter, verb_string, 
+        command = str.format("ansible -m {0} {1} {2} {3}{4}{5}{6}{7}", req_module, module_args_string, fork_string, host_filter, verb_string, 
                              become_string, become_method_string, become_user_string)
         task_result = do_long_running_task.apply_async([command])
         result = {'task_id': task_result.id}
