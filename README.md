@@ -3,12 +3,9 @@
 
 ---
 
-Flansible is a very simple rest api for Ansible. It it _not_ a replacement for [Ansible Tower](https://www.ansible.com/tower).
+Flansible is a very simple rest api for executing Ansible ad-hoc-commands and (later) playbooks. It it _not_ a replacement for [Ansible Tower](https://www.ansible.com/tower).
 
 Flansible is written in [Flask](http://flask.pocoo.org/), and uses [celery](http://www.celeryproject.org/) for async task execution and optionally [flower](http://flower.readthedocs.io/en/latest/features.html) for real-time monitoring of celery.
-
-### Setup
-Setup tested on Ubuntu 14.04
 
 #### Required python packages with tested versions (newer version should be fine):
 ```bash
@@ -26,10 +23,12 @@ redis==2.10.5
 Celery requires a datastore, either Redis or RabbitMQ.
 
 #### Configuration
-The config.ini file should be pretty self-explanatory
+The config.ini file should be pretty self-explanatory. It's probably a good idea to remove lines 5-10 in app.py, as that's only a debug definition which probably won't make sense to you.
 
 ### Setup
-from the Flansible/Flansible directory (where the .py files live), run the following (either using screen or in separate terminals):
+Setup tested on Ubuntu 14.04
+from the Flansible/Flansible directory (where the .py files live), run the following (either using [screen](http://aperiodic.net/screen/start) or in separate terminals):
+
 `celery worker -A app.celery --loglevel=info` (this starts the celery worker which will actually execute the things)
 
 `python app.py` (this starts the actual webserver. You're free to replace the built-in flask server with something else)
@@ -41,9 +40,10 @@ Flansible comes with swagger documentation, which can be reached at
 `http://<hostname>/api/spec.html`, with the json spec located at `http://<hostname>/api/spec`
 
 ### Usage: Ad-hoc commands
-Issue a POST to `http://<hostname>/api/ansiblecommand` with contenttype `Application/Json`
+Issue a POST to `http://<hostname>/api/ansiblecommand` with contenttype `Application/Json`.
+
 Flansible uses basic auth, with username/password configurable in the config.ini file (default: admin/admin)
-The body should contain the following (also, see the swagger spec mentioned above)
+The body should contain the following (also, see the swagger spec mentioned above):
 ```json
 {                                               
     "module":  "find",

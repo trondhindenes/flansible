@@ -1,8 +1,7 @@
 import platform
 
-if platform.system() == 'Windows':
-    pass
-else:
+#Visual studio remote debugger
+if platform.node() == 'ansible01':
     try:
         import ptvsd
         ptvsd.enable_attach(secret='my_secret', address = ('0.0.0.0', 3000))
