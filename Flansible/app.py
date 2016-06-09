@@ -213,6 +213,7 @@ class RunAnsiblePlaybook(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('playbook_dir', type=str, help='folder where playbook file resides', required=True)
         parser.add_argument('playbook', type=str, help='name of the playbook', required=True)
+        parser.add_argument('inventory', type=str, help='path to inventory', required=False,)
         parser.add_argument('extra_vars', type=dict, help='extra vars', required=False)
         parser.add_argument('forks', type=int, help='forks', required=False)
         parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
@@ -221,9 +222,10 @@ class RunAnsiblePlaybook(Resource):
 
         playbook_dir = args['playbook_dir']
         playbook = args['playbook']
-
         become = args['become']
 
+        curr_user = auth.username()
+        
         playbook_full_path = playbook_dir + "/" + playbook
         playbook_full_path = playbook_full_path.replace("//","/")
 
@@ -237,13 +239,22 @@ class RunAnsiblePlaybook(Resource):
             resp = app.make_response((str.format("Playbook not found in folder. Path does not exist: {0}", playbook_full_path), 404))
             return resp
 
+        if not inventory:
+            inventory = ansible_default_inventory
+            has_inv_access =  get_inventory_access(curr_user,  inventory)
+            if not has_inv_access:
+                resp = app.make_response((str.format("User does not have access to inventory {0}", inventory), 403))
+                return resp
+
+        inventory = str.format(" -i {0}", inventory)
+
         if become:
             become_string = ' --become'
         else:
             become_string = ''
 
 
-        command = str.format("cd {0};ansible-playbook {1}{2}", playbook_dir, playbook, become_string)
+        command = str.format("cd {0};ansible-playbook {1}{2}{3}", playbook_dir, playbook, become_string, inventory)
         task_result = do_long_running_task.apply_async([command])
         result = {'task_id': task_result.id}
         return result
