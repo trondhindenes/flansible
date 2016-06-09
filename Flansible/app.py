@@ -192,6 +192,10 @@ class RunAnsiblePlaybook(Resource):
 
 
         command = str.format("cd {0};ansible-playbook {1}{2}", playbook_dir, playbook, become_string)
+        task_result = do_long_running_task.apply_async([command])
+        result = {'task_id': task_result.id}
+        return result
+
 
 api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
     
