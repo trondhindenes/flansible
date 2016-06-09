@@ -164,10 +164,13 @@ class RunAnsiblePlaybook(Resource):
         parser.add_argument('extra_vars', type=dict, help='extra vars', required=False)
         parser.add_argument('forks', type=int, help='forks', required=False)
         parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
+        parser.add_argument('become', type=bool, help='run with become', required=False)
         args = parser.parse_args()
 
         playbook_dir = args['playbook_dir']
         playbook = args['playbook']
+
+        become = args['become']
 
         playbook_full_path = playbook_dir + "/" + playbook
         playbook_full_path = playbook_full_path.replace("//","/")
@@ -181,7 +184,14 @@ class RunAnsiblePlaybook(Resource):
         if not os.path.exists(playbook_full_path):
             resp = app.make_response((str.format("Playbook not found in folder. Path does not exist: {0}", playbook_full_path), 404))
             return resp
-        
+
+        if become:
+            become_string = ' --become'
+        else:
+            become_string = ''
+
+
+        command = str.format("cd {0};ansible-playbook {1}{2}", playbook_dir, playbook, become_string)
 
 api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
     
