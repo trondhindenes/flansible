@@ -25,8 +25,12 @@ Celery requires a datastore, either Redis or RabbitMQ.
 #### Configuration
 The config.ini file should be pretty self-explanatory. It's probably a good idea to remove lines 5-10 in app.py, as that's only a debug definition which probably won't make sense to you.
 
+If you want to run the flask webserver on port 80 like I'm doing without running as root, you need to allow python to use priveliged ports:
+`sudo setcap 'cap_net_bind_service=+ep' /usr/bin/python2.7`
+
 ### Setup
 Setup tested on Ubuntu 14.04
+
 from the Flansible/Flansible directory (where the .py files live), run the following (either using [screen](http://aperiodic.net/screen/start) or in separate terminals):
 
 `celery worker -A app.celery --loglevel=info` (this starts the celery worker which will actually execute the things)
@@ -62,6 +66,22 @@ where
 
 ### Usage: Playbooks
 TODO
+
+
+### how it looks
+1. Execute an Ansible command. The returning task_id is used to check status
+![alt text](http://s33.postimg.org/eucfmo0un/2016_06_09_03_12_32_Postman.jpg "Execute the thing")
+
+2. Use the returned task_id to get the Ansible job output:
+![alt text](http://s33.postimg.org/7ir75l7wv/2016_06_09_03_13_04_Postman.jpg "Get output")
+
+3. Use Flower to check job statuses:
+![alt text](http://s33.postimg.org/wnn9g4dov/2016_06_09_03_19_09_Celery_Flower.png "Get job status")
+
+4. Use Swagger to get a feel for the api (this is very much work in progress)
+![alt text](http://s33.postimg.org/fq2hivpe7/2016_06_09_03_20_49_Swagger_UI.png "Swagger spec")
+
+
 
 
 
