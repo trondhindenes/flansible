@@ -17,6 +17,9 @@ class AnsibleCommandModel:
         'inventory': fields.String,
         'forks' : fields.Integer,
         'verbose_level': fields.Integer,
+        'become': fields.Boolean,
+        'become_method': fields.String,
+        'become_user': fields.String,
     }
 
 
