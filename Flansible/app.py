@@ -25,7 +25,7 @@ from flask_restful import Resource, Api, reqparse, fields
 from flask_restful_swagger import swagger
 import sys
 import json
-from ModelClasses import AnsibleCommandModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
+from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 
 
 
@@ -208,6 +208,31 @@ api.add_resource(RunAnsibleCommand, '/api/ansiblecommand')
 
 
 class RunAnsiblePlaybook(Resource):
+    @swagger.operation(
+        notes='Run Ansible Playbook',
+        nickname='ansibleplaybook',
+        responseClass=AnsibleRequestResultModel.__name__,
+        parameters=[
+            {
+              "name": "body",
+              "description": "Inut object",
+              "required": True,
+              "allowMultiple": False,
+              "dataType": AnsiblePlaybookModel.__name__,
+              "paramType": "body"
+            }
+          ],
+        responseMessages=[
+            {
+              "code": 200,
+              "message": "Ansible playbook started"
+            },
+            {
+              "code": 400,
+              "message": "Invalid input"
+            }
+          ]
+    )
     @auth.login_required
     def post(self):
         parser = reqparse.RequestParser()
@@ -264,6 +289,19 @@ api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
     
 
 class AnsibleTaskOutput(Resource):
+    @swagger.operation(
+    notes='Get the output of an Ansible task/job',
+    nickname='ansibletaskoutput',
+    parameters=[
+        {
+        "name": "task_id",
+        "description": "The ID of the task/job to get status for",
+        "required": True,
+        "allowMultiple": False,
+        "dataType": 'string',
+        "paramType": "path"
+        }
+    ])
     @auth.login_required
     def get(self, task_id):
         task = do_long_running_task.AsyncResult(task_id)
@@ -282,6 +320,19 @@ class AnsibleTaskOutput(Resource):
 api.add_resource(AnsibleTaskOutput, '/api/ansibletaskoutput/<string:task_id>')
 
 class AnsibleTaskStatus(Resource):
+    @swagger.operation(
+    notes='Get the status of an Ansible task/job',
+    nickname='ansibletaskstatus',
+    parameters=[
+        {
+        "name": "task_id",
+        "description": "The ID of the task/job to get status for",
+        "required": True,
+        "allowMultiple": False,
+        "dataType": 'string',
+        "paramType": "path"
+        }
+    ])
     @auth.login_required
     def get(self, task_id):
         task = do_long_running_task.AsyncResult(task_id)

@@ -96,8 +96,17 @@ where
 * extra_args: array of objects containing any extra vars
 
 ### Usage: Playbooks
-TODO
+This is an example of playbook execution:
 
+```json
+{
+  "playbook_dir": "/home/thadministrator",
+  "playbook": "test.yml",
+  "become": true
+}
+```
+
+Flansible will verify that the playbook dir/file exists before submitting the job for execution.
 
 ### how it looks
 * Execute an Ansible command (`/api/ansiblecommand`). The returning task_id is used to check status: 
