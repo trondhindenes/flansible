@@ -5,7 +5,7 @@
       "password": "admin",
       "inventories": [
         "username admin has implicit access to all inventories",
-        "noneed to specify anything here"
+        "no need to specify anything here"
       ]
 
     },

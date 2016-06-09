@@ -131,7 +131,9 @@ class RunAnsibleCommand(Resource):
         become_method = args['become_method']
         become_user = args['become_user']
         module_args_string = ''
+        extra_vars_string = ''
         curr_user = auth.username()
+        
         if module_args:
             counter = 1
             module_args_string += '-a"'
@@ -144,6 +146,20 @@ class RunAnsibleCommand(Resource):
                 module_args_string += opt_string
                 counter += 1
             module_args_string += '"'
+
+        if extra_vars:
+            counter = 1
+            extra_vars_string += ' -e"'
+            for key in extra_vars.keys():
+                if counter < len(extra_vars):
+                    spacer = " "
+                else:
+                    spacer = ""
+                opt_string = str.format("{0}={1}{2}",key,extra_vars[key], spacer)
+                extra_vars_string += opt_string
+                counter += 1
+            extra_vars_string += '"'
+        
         if not inventory:
             inventory = ansible_default_inventory
             has_inv_access =  get_inventory_access(curr_user,  inventory)
@@ -182,8 +198,8 @@ class RunAnsibleCommand(Resource):
             become_user_string = ''
 
 
-        command = str.format("ansible {8} -m {0} {1} {2} {3}{4}{5}{6}{7}", req_module, module_args_string, fork_string, verb_string, 
-                             become_string, become_method_string, become_user_string, inventory, host_pattern)
+        command = str.format("ansible {9} -m {0} {1} {2} {3}{4}{5}{6}{7}{8}", req_module, module_args_string, fork_string, verb_string, 
+                             become_string, become_method_string, become_user_string, inventory, extra_vars_string ,host_pattern)
         task_result = do_long_running_task.apply_async([command])
         result = {'task_id': task_result.id}
         return result
