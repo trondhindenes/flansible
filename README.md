@@ -27,6 +27,7 @@ The config.ini file should be pretty self-explanatory. It's probably a good idea
 
 ### Setup
 Setup tested on Ubuntu 14.04
+
 from the Flansible/Flansible directory (where the .py files live), run the following (either using [screen](http://aperiodic.net/screen/start) or in separate terminals):
 
 `celery worker -A app.celery --loglevel=info` (this starts the celery worker which will actually execute the things)
