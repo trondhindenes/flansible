@@ -41,12 +41,13 @@ OPTIONAL: `flower --broker=redis://localhost:6379/0` (this starts the flower web
 
 ### Usage: General
 Flansible comes with swagger documentation, which can be reached at
-`http://<hostname>/api/spec.html`, with the json spec located at `http://<hostname>/api/spec`
+`http://<hostname>/api/spec.html`, with the json spec located at `http://<hostname>/api/spec`. This should be your first stop for getting to know the 
+expected json payload when interacting with the api.
 
 ### Usage: Role-based access
 Flansible uses basic auth, with username/password configurable in the rbac.json file (default: admin/admin)
 
-rbac.json allows linking usernames with "allowed" inventories. The example provided shows how to configure a "devadmin" user
+rbac.json allows linking usernames with a list of allowed inventories. The example provided shows how to configure a "devadmin" user
 which doesn't have access to Ansible's default inventory:
 ```json
 {
@@ -74,6 +75,9 @@ which doesn't have access to Ansible's default inventory:
 }
 ```
 Not that the username "admin" is special, and is not subject to inventory access checking.
+
+The idea behind this rbac implementation is to allow separate credentials for executing tasks and playbooks 
+against dev/test environments without having access to make changes to production systems.
 
 ### Usage: Ad-hoc commands
 Issue a POST to `http://<hostname>/api/ansiblecommand` with contenttype `Application/Json`.
