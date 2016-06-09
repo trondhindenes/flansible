@@ -34,7 +34,7 @@ from the Flansible/Flansible directory (where the .py files live), run the follo
 
 `python app.py` (this starts the actual webserver. You're free to replace the built-in flask server with something else)
 
-OPTIONAL: `flower --broker=redis://localhost:6379/0` (this starts the flower web gui, which gives provides information for running tasks. Replace the value of `--broker` with your own connection string for the redis/rabbitmq data store). Flower will be available on http://<servername>:5555
+OPTIONAL: `flower --broker=redis://localhost:6379/0` (this starts the flower web gui, which gives provides information for running tasks. Replace the value of `--broker` with your own connection string for the redis/rabbitmq data store). Flower will be available on `http://<hostname>:5555`.
 
 ### Usage: General
 Flansible comes with swagger documentation, which can be reached at
