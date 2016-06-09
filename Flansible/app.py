@@ -190,7 +190,8 @@ class AnsibleTaskStatus(Resource):
     @auth.login_required
     def get(self, task_id):
         task = do_long_running_task.AsyncResult(task_id)
-        return  task.info
+        result_obj = {'Status': task.state}
+        return  result_obj
 
 api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')
 
