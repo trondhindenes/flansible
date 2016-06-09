@@ -283,6 +283,8 @@ def do_long_running_task(self, cmd):
                           meta={'result': error_out})
             return {'result': error_out}
         else:
+            if len(result) is 0:
+                result = "no output, maybe no matching hosts?"
             return {'result': result}
 
 if __name__ == '__main__':
