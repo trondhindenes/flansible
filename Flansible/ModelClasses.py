@@ -12,6 +12,7 @@ class AnsibleExtraArgsModel:
 @swagger.model
 class AnsibleCommandModel:
     resource_fields = {
+        'host_pattern': fields.String,
         'module': fields.String,
         'extra_args': fields.List(fields.Nested(AnsibleExtraArgsModel.resource_fields)),
         'inventory': fields.String,

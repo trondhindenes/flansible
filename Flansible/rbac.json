@@ -1,0 +1,22 @@
+{
+  "rbac": [
+    {
+      "user": "admin",
+      "password": "admin",
+      "inventories": [
+        "/etc/ansible/hosts",
+        "/some/folder/dev"
+      ]
+
+    },
+    {
+      "user": "devadmin",
+      "password": "devpassword",
+      "inventories": [
+        "/some/folder/dev"
+      ]
+
+    }
+
+  ]
+}

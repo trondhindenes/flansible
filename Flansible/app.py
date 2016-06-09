@@ -24,6 +24,7 @@ import time
 from flask_restful import Resource, Api, reqparse, fields
 from flask_restful_swagger import swagger
 import sys
+import json
 from ModelClasses import AnsibleCommandModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 
 
@@ -35,6 +36,13 @@ auth = HTTPBasicAuth()
 config = SafeConfigParser()
 config.read('config.ini')
 
+ansible_config = SafeConfigParser()
+try:
+    ansible_config.read('/etc/ansible/ansible.cfg')
+    ansible_default_inventory = config.get("Defaults", "inventory")
+except:
+    ansible_default_inventory = '/etc/ansible/hosts'
+
 app.config['CELERY_BROKER_URL'] = config.get("Default", "CELERY_BROKER_URL")
 app.config['CELERY_RESULT_BACKEND'] = config.get("Default", "CELERY_RESULT_BACKEND")
 
@@ -43,14 +51,31 @@ api = swagger.docs(Api(app), apiVersion='0.1')
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
+inventory_access = []
 
+def get_inventory_access(username, inventory):
+    result = False
+    with open("rbac.json") as rbac_file:
+        rbac_data = json.load(rbac_file)
+    user_list = rbac_data['rbac']
+    for user in user_list:
+        if user['user'] == username:
+            inventory_list = user['inventories']
+            if inventory in inventory_list:
+                result = True
+    return result
 
 @auth.verify_password
 def verify_password(username, password):
     result = False
-    if username == config.get("Default", "username"):
-        if password == config.get("Default", "password"):
-            result = True
+    with open("rbac.json") as rbac_file:
+        rbac_data = json.load(rbac_file)
+    user_list = rbac_data['rbac']
+    for user in user_list:
+        if user['user'] == username:
+            if user['password'] == password:
+                result = True
+                inventory_access = user['inventories']
     return result
 
 class RunAnsibleCommand(Resource):
@@ -82,26 +107,29 @@ class RunAnsibleCommand(Resource):
     @auth.login_required
     def post(self):
         parser = reqparse.RequestParser()
+        parser.add_argument('host_pattern', type=str, help='need to specify host_pattern', required=True)
         parser.add_argument('module', type=str, help='module name', required=True)
         parser.add_argument('module_args', type=dict, help='module_args', required=False)
         parser.add_argument('extra_vars', type=dict, help='extra_vars', required=False)
-        parser.add_argument('inventory', type=str, help='host filter/inventory', required=False)
+        parser.add_argument('inventory', type=str, help='path to inventory', required=False,)
         parser.add_argument('forks', type=int, help='forks', required=False)
         parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
         parser.add_argument('become', type=bool, help='run with become', required=False)
         parser.add_argument('become_method', type=str, help='become method', required=False)
         parser.add_argument('become_user', type=str, help='become user', required=False)
         args = parser.parse_args()
+        host_pattern = args['host_pattern']
         req_module = args['module']
         module_args = args['module_args']
         extra_vars = args['extra_vars']
-        host_filter = args['inventory']
+        inventory = args['inventory']
         forks = args['forks']
         verbose_level = args['verbose_level']
         become = args['become']
         become_method = args['become_method']
         become_user = args['become_user']
         module_args_string = ''
+        curr_user = auth.username()
         if module_args:
             counter = 1
             module_args_string += '-a"'
@@ -114,8 +142,14 @@ class RunAnsibleCommand(Resource):
                 module_args_string += opt_string
                 counter += 1
             module_args_string += '"'
-        if not host_filter:
-            host_filter = "localhost"
+        if not inventory:
+            inventory = ansible_default_inventory
+            has_inv_access =  get_inventory_access(curr_user,  inventory)
+            if not has_inv_access:
+                resp = app.make_response((str.format("User does not have access to inventory {0}", inventory), 403))
+                return resp
+
+            inventory = str.format(" -i {0}", inventory)
         if forks:
             fork_string = str.format('-f {0}', str(forks))
         else:
@@ -146,8 +180,8 @@ class RunAnsibleCommand(Resource):
             become_user_string = ''
 
 
-        command = str.format("ansible -m {0} {1} {2} {3}{4}{5}{6}{7}", req_module, module_args_string, fork_string, host_filter, verb_string, 
-                             become_string, become_method_string, become_user_string)
+        command = str.format("ansible {8} -m {0} {1} {2} {3}{4}{5}{6}{7}", req_module, module_args_string, fork_string, verb_string, 
+                             become_string, become_method_string, become_user_string, inventory, host_pattern)
         task_result = do_long_running_task.apply_async([command])
         result = {'task_id': task_result.id}
         return result
