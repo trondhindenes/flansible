@@ -248,6 +248,7 @@ class RunAnsiblePlaybook(Resource):
         playbook_dir = args['playbook_dir']
         playbook = args['playbook']
         become = args['become']
+        inventory = args['inventory']
 
         curr_user = auth.username()
         
@@ -287,7 +288,6 @@ class RunAnsiblePlaybook(Resource):
 
 api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
     
-
 class AnsibleTaskOutput(Resource):
     @swagger.operation(
     notes='Get the output of an Ansible task/job',
