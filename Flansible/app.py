@@ -84,11 +84,15 @@ class RunAnsibleCommand(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('module', type=str, help='module name', required=True)
         parser.add_argument('extra_args', type=dict, help='extra args', required=False)
-        parser.add_argument('host_filter', type=str, help='host filter', required=False)
+        parser.add_argument('inventory', type=str, help='host filter/inventory', required=False)
+        parser.add_argument('forks', type=int, help='forks', required=False)
+        parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
         args = parser.parse_args()
         req_module = args['module']
         extra_args = args['extra_args']
-        host_filter = args['host_filter']
+        host_filter = args['inventory']
+        forks = args['forks']
+        verbose_level = args['verbose_level']
         extra_args_string = ''
         if extra_args:
             counter = 1
@@ -104,15 +108,41 @@ class RunAnsibleCommand(Resource):
             extra_args_string += '"'
         if not host_filter:
             host_filter = "localhost"
+        if forks:
+            fork_string = str.format('-f {0}', str(forks))
+        else:
+            fork_string = ''
 
+        if verbose_level:
+            verb_counter = 1
+            verb_string = " -"
+            while verb_counter <= verbose_level:
+                verb_string += "v"
+                verb_counter += 1
+        else:
+            verb_string = ''
 
-        command = str.format("ansible -m {0} {1} {2}", req_module, extra_args_string, host_filter)
+        command = str.format("ansible -m {0} {1} {2} {3}{4}", req_module, extra_args_string, fork_string, host_filter, verb_string)
         task_result = do_long_running_task.apply_async([command])
         result = {'task_id': task_result.id}
         return result
 
 api.add_resource(RunAnsibleCommand, '/api/ansiblecommand')
 
+
+class RunAnsiblePlaybook(Resource):
+    @auth.login_required
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('playbook_dir', type=str, help='folder where playbook file resides', required=True)
+        parser.add_argument('playbook', type=str, help='name of the playbook', required=True)
+        parser.add_argument('extra_vars', type=dict, help='extra vars', required=False)
+        parser.add_argument('forks', type=int, help='forks', required=False)
+        parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
+
+
+api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
+    
 
 class AnsibleTaskStatus(Resource):
     @auth.login_required
