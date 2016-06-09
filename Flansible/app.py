@@ -172,7 +172,11 @@ class AnsibleTaskStatus(Resource):
     @auth.login_required
     def get(self, task_id):
         task = do_long_running_task.AsyncResult(task_id)
-        result = task.info['result']
+        
+        if task.state is "PROGRESS":
+            result = "Task in progress"
+        else:
+            result = task.info['result']
         #result_out = task.info.replace('\n', "<br>")
         #result = result.replace('\n', '<br>')
         #return result, 200, {'Content-Type': 'text/html; charset=utf-8'}
