@@ -69,11 +69,11 @@ TODO
 
 
 ### how it looks
-* Execute an Ansible command. The returning task_id is used to check status:
+* Execute an Ansible command (`/api/ansiblecommand`). The returning task_id is used to check status: 
 
 ![alt text](http://s33.postimg.org/eucfmo0un/2016_06_09_03_12_32_Postman.jpg "Execute the thing")
 
-* Use the returned task_id to get the Ansible job output:
+* Use the returned task_id to get the Ansible job output (`/api/ansibletaskstatus/<task-id>`):
 
 ![alt text](http://s33.postimg.org/7ir75l7wv/2016_06_09_03_13_04_Postman.jpg "Get output")
 
