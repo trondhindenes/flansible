@@ -164,6 +164,7 @@ class RunAnsiblePlaybook(Resource):
         parser.add_argument('extra_vars', type=dict, help='extra vars', required=False)
         parser.add_argument('forks', type=int, help='forks', required=False)
         parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
+        args = parser.parse_args()
 
         playbook_dir = args['playbook_dir']
         playbook = args['playbook']
