@@ -1,4 +1,5 @@
 *.pyc
 *.txt
 .vs/y
+.vs/
 .idea/
