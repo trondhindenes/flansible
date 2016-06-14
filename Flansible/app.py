@@ -35,7 +35,7 @@ auth = HTTPBasicAuth()
 this_path = sys.path[0]
 
 config = SafeConfigParser()
-config.read(this_path + 'config.ini')
+config.read(this_path + '/config.ini')
 
 ansible_config = SafeConfigParser()
 try:
