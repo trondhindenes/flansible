@@ -32,9 +32,10 @@ from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleReque
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 
+this_path = sys.path[0]
 
 config = SafeConfigParser()
-config.read('config.ini')
+config.read(this_path + 'config.ini')
 
 ansible_config = SafeConfigParser()
 try:
