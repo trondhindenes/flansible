@@ -23,6 +23,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="flansible_git.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ModelClasses.py">
       <SubType>Code</SubType>
     </Compile>
@@ -30,12 +33,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="config.ini" />
+    <Content Include="Examples\app.wsgi" />
+    <Content Include="Examples\python.conf" />
+    <Content Include="Examples\README.md" />
     <Content Include="rbac.json" />
     <Content Include="Utils\attach.txt" />
     <Content Include="Utils\debug.sh" />
     <Content Include="Utils\test.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Examples\" />
     <Folder Include="Utils\" />
   </ItemGroup>
   <PropertyGroup>

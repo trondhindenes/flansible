@@ -1,7 +1,7 @@
 import platform
 
 #Visual studio remote debugger
-if platform.node() == 'ansible01':
+if platform.node() == 'thansible01':
     try:
         import ptvsd
         ptvsd.enable_attach(secret='my_secret', address = ('0.0.0.0', 3000))
@@ -19,6 +19,7 @@ from ConfigParser import SafeConfigParser
 from flask import Flask, request, render_template, session, flash, redirect, url_for, jsonify
 from flask_httpauth import HTTPBasicAuth
 from celery import Celery
+import celery.events.state
 import subprocess
 import time
 from flask_restful import Resource, Api, reqparse, fields
@@ -26,6 +27,7 @@ from flask_restful_swagger import swagger
 import sys
 import json
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
+from flansible_git import FlansibleGit
 
 
 
@@ -46,10 +48,13 @@ except:
 
 app.config['CELERY_BROKER_URL'] = config.get("Default", "CELERY_BROKER_URL")
 app.config['CELERY_RESULT_BACKEND'] = config.get("Default", "CELERY_RESULT_BACKEND")
+str_task_timeout = config.get("Default", "CELERY_TASK_TIMEOUT")
+task_timeout = int(str_task_timeout)
 
 api = swagger.docs(Api(app), apiVersion='0.1')
 
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], )
+celery.control.time_limit('do_long_running_task', soft=900, hard=900, reply=True)
 celery.conf.update(app.config)
 
 inventory_access = []
@@ -201,7 +206,7 @@ class RunAnsibleCommand(Resource):
 
         command = str.format("ansible {9} -m {0} {1} {2} {3}{4}{5}{6}{7}{8}", req_module, module_args_string, fork_string, verb_string, 
                              become_string, become_method_string, become_user_string, inventory, extra_vars_string ,host_pattern)
-        task_result = do_long_running_task.apply_async([command])
+        task_result = do_long_running_task.apply_async([command], soft=task_timeout, hard=task_timeout)
         result = {'task_id': task_result.id}
         return result
 
@@ -244,12 +249,17 @@ class RunAnsiblePlaybook(Resource):
         parser.add_argument('forks', type=int, help='forks', required=False)
         parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
         parser.add_argument('become', type=bool, help='run with become', required=False)
+        parser.add_argument('update_git_repo', type=bool, help='Set to true to update git repo prior to executing', required=False)
         args = parser.parse_args()
 
         playbook_dir = args['playbook_dir']
         playbook = args['playbook']
         become = args['become']
         inventory = args['inventory']
+        update_git_repo = args['update_git_repo']
+
+        if update_git_repo is True:
+            playbook_dir, playbook = FlansibleGit.update_git_repo(playbook_dir, playbook)
 
         curr_user = auth.username()
         
@@ -282,7 +292,7 @@ class RunAnsiblePlaybook(Resource):
 
 
         command = str.format("cd {0};ansible-playbook {1}{2}{3}", playbook_dir, playbook, become_string, inventory)
-        task_result = do_long_running_task.apply_async([command])
+        task_result = do_long_running_task.apply_async([command], soft=task_timeout, hard=task_timeout)
         result = {'task_id': task_result.id}
         return result
 

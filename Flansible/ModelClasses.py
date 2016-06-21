@@ -41,6 +41,7 @@ class AnsiblePlaybookModel:
         'forks' : fields.Integer,
         'verbose_level': fields.Integer,
         'become': fields.Boolean,
+        'update_git_repo': fields.Boolean,
     }
 
 
