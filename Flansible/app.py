@@ -403,6 +403,7 @@ def do_long_running_task(self, cmd):
                     break
             else:
                 identifier, line = item
+                print identifier + ':', line
                 if identifier == "STDERR":
                     has_error = True
                 output = output + line
