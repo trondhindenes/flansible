@@ -394,6 +394,7 @@ def do_long_running_task(self, cmd):
                 args=('STDERR', proc.stderr)).start()
 
         while True:
+            print("Waiting for output")
             try:
                 # Block for 1 second.
                 item = io_q.get(True, 0.3)
