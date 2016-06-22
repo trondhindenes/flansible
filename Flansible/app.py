@@ -29,8 +29,8 @@ from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleReque
 from flansible_git import FlansibleGit
 
 
-
-
+#Setup queue for celery
+io_q = Queue()
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
@@ -380,8 +380,7 @@ def status_updater():
 @celery.task(bind=True, soft_time_limit=task_timeout, time_limit=(task_timeout+10))
 def do_long_running_task(self, cmd):
     with app.app_context():
-        io_q = Queue()
-
+        
         has_error = False
         result = None
         output = None
@@ -418,8 +417,8 @@ def do_long_running_task(self, cmd):
                           meta={'output': output})
             return {'result': output}
         else:
-            if len(result) is 0:
-                result = "no output, maybe no matching hosts?"
+            if len(output) is 0:
+                output = "no output, maybe no matching hosts?"
             return {'result': output}
 
 if __name__ == '__main__':
