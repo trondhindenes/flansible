@@ -413,13 +413,13 @@ def do_long_running_task(self, cmd):
         #        output = output + line
         #        self.update_state(state='PROGRESS',
         #                  meta={'result': output})
-
+        proc.poll()
         self.update_state(state='FINISHED',
                           meta={'result': output})
-        if has_error:
+        if proc.returncode is not 0:
             #failure
             self.update_state(state='FAILED',
-                          meta={'output': output})
+                          meta={'output': output, 'returncode': proc.returncode})
             return {'result': output}
         else:
             if len(output) is 0:
