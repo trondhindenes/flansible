@@ -319,7 +319,7 @@ class AnsibleTaskOutput(Resource):
         task = do_long_running_task.AsyncResult(task_id)
         
         if task.state == "PROGRESS":
-            result = "Task in progress"
+            result = task.info['result']
         else:
             result = task.info['result']
         #result_out = task.info.replace('\n', "<br>")
@@ -385,7 +385,7 @@ def do_long_running_task(self, cmd):
         result = None
         output = ""
         self.update_state(state='PROGRESS',
-                          meta={'result': result})
+                          meta={'result': output})
         print(str.format("About to execute: {0}", cmd))
         proc = Popen([cmd], stdout=PIPE, stderr=PIPE, shell=True)
         Thread(target=stream_watcher, name='stdout-watcher',
@@ -407,7 +407,7 @@ def do_long_running_task(self, cmd):
                     has_error = True
                 output = output + line
                 self.update_state(state='PROGRESS',
-                          meta={'output': output})
+                          meta={'result': output})
 
         self.update_state(state='FINISHED',
                           meta={'result': output})
