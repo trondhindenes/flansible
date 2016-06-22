@@ -354,7 +354,6 @@ class AnsibleTaskStatus(Resource):
 api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')
 
 def stream_watcher(identifier, stream):
-
     for line in stream:
         io_q.put((identifier, line))
 
@@ -388,28 +387,30 @@ def do_long_running_task(self, cmd):
                           meta={'result': output})
         print(str.format("About to execute: {0}", cmd))
         proc = Popen([cmd], stdout=PIPE, stderr=PIPE, shell=True)
-        Thread(target=stream_watcher, name='stdout-watcher',
-                args=('STDOUT', proc.stdout)).start()
-        Thread(target=stream_watcher, name='stderr-watcher',
-                args=('STDERR', proc.stderr)).start()
+        for c in iter(lambda: proc.stdout.read(1), ''):
+            print(str(c))
+        #Thread(target=stream_watcher, name='stdout-watcher',
+        #        args=('STDOUT', proc.stdout)).start()
+        #Thread(target=stream_watcher, name='stderr-watcher',
+        #        args=('STDERR', proc.stderr)).start()
 
-        while True:
-            print("Waiting for output")
-            try:
-                # Block for 1 second.
-                item = io_q.get(True, 0.3)
-            except Empty:
-                if proc.poll() is not None:
-                    #Task is done, end loop
-                    break
-            else:
-                identifier, line = item
-                print identifier + ':', line
-                if identifier == "STDERR":
-                    has_error = True
-                output = output + line
-                self.update_state(state='PROGRESS',
-                          meta={'result': output})
+        #while True:
+        #    print("Waiting for output")
+        #    try:
+        #        # Block for 1 second.
+        #        item = io_q.get(True, 0.3)
+        #    except Empty:
+        #        if proc.poll() is not None:
+        #            #Task is done, end loop
+        #            break
+        #    else:
+        #        identifier, line = item
+        #        print identifier + ':', line
+        #        if identifier == "STDERR":
+        #            has_error = True
+        #        output = output + line
+        #        self.update_state(state='PROGRESS',
+        #                  meta={'result': output})
 
         self.update_state(state='FINISHED',
                           meta={'result': output})
