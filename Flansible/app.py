@@ -396,7 +396,7 @@ def do_long_running_task(self, cmd):
         while True:
             try:
                 # Block for 1 second.
-                item = io_q.get(True, 1)
+                item = io_q.get(True, 0.3)
             except Empty:
                 if proc.poll() is not None:
                     #Task is done, end loop
