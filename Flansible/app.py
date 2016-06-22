@@ -14,6 +14,7 @@ import sys
 import json
 from threading import Thread
 from subprocess import Popen, PIPE
+import subprocess
 from Queue import Queue, Empty
 from datetime import datetime
 from ConfigParser import SafeConfigParser
