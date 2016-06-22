@@ -387,7 +387,7 @@ def do_long_running_task(self, cmd):
         output = None
         self.update_state(state='PROGRESS',
                           meta={'result': result})
-        
+        print(str.format("About to execute: {0}", cmd))
         proc = Popen([cmd], stdout=PIPE, stderr=PIPE)
         Thread(target=stream_watcher, name='stdout-watcher',
                 args=('STDOUT', proc.stdout)).start()
