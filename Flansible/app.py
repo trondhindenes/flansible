@@ -348,7 +348,18 @@ class AnsibleTaskStatus(Resource):
     @auth.login_required
     def get(self, task_id):
         task = do_long_running_task.AsyncResult(task_id)
-        result_obj = {'Status': task.state}
+        try:
+            return_code = task.info['returncode']
+            description = task.info['description']
+            if return_code is 0:
+                result_obj = {'Status': "SUCCESS", 
+                              'description': description}
+            else:
+                result_obj = {'Status': "ANSIBLEFAILURE",
+                              'description': description,
+                              'returncode': return_code}
+        except:
+            result_obj = {'Status': "CELERYFAILURE"}
         return  result_obj
 
 api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')
@@ -384,13 +395,15 @@ def do_long_running_task(self, cmd):
         result = None
         output = ""
         self.update_state(state='PROGRESS',
-                          meta={'output': output})
+                          meta={'output': output, 
+                                'description': "",
+                                'returncode': None})
         print(str.format("About to execute: {0}", cmd))
         proc = Popen([cmd], stdout=PIPE, stderr=PIPE, shell=True)
         for line in iter(proc.stdout.readline, ''):
             print(str(line))
             output = output + line
-            self.update_state(state='PROGRESS', meta={'result': output})
+            self.update_state(state='PROGRESS', meta={'output': output,'description': "",'returncode': None})
         #Thread(target=stream_watcher, name='stdout-watcher',
         #        args=('STDOUT', proc.stdout)).start()
         #Thread(target=stream_watcher, name='stderr-watcher',
@@ -416,7 +429,7 @@ def do_long_running_task(self, cmd):
         return_code = proc.poll()
         meta = {'output': output, 
                     'returncode': proc.returncode,
-                    'description': "Celery ran the task, but ansible reported error"
+                    'description': ""
                 }
         self.update_state(state='FINISHED',
                           meta=meta)
