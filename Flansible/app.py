@@ -389,6 +389,8 @@ def do_long_running_task(self, cmd):
         proc = Popen([cmd], stdout=PIPE, stderr=PIPE, shell=True)
         for line in iter(proc.stdout.readline, ''):
             print(str(line))
+            output = output + line
+            self.update_state(state='PROGRESS', meta={'result': output})
         #Thread(target=stream_watcher, name='stdout-watcher',
         #        args=('STDOUT', proc.stdout)).start()
         #Thread(target=stream_watcher, name='stderr-watcher',
