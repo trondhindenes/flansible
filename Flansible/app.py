@@ -383,7 +383,7 @@ def do_long_running_task(self, cmd):
         
         has_error = False
         result = None
-        output = None
+        output = ""
         self.update_state(state='PROGRESS',
                           meta={'result': result})
         print(str.format("About to execute: {0}", cmd))
