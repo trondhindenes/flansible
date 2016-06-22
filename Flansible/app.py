@@ -319,9 +319,9 @@ class AnsibleTaskOutput(Resource):
         task = do_long_running_task.AsyncResult(task_id)
         
         if task.state == "PROGRESS":
-            result = task.info['result']
+            result = task.info['output']
         else:
-            result = task.info['result']
+            result = task.info['output']
         #result_out = task.info.replace('\n', "<br>")
         #result = result.replace('\n', '<br>')
         #return result, 200, {'Content-Type': 'text/html; charset=utf-8'}
@@ -384,7 +384,7 @@ def do_long_running_task(self, cmd):
         result = None
         output = ""
         self.update_state(state='PROGRESS',
-                          meta={'result': output})
+                          meta={'output': output})
         print(str.format("About to execute: {0}", cmd))
         proc = Popen([cmd], stdout=PIPE, stderr=PIPE, shell=True)
         for line in iter(proc.stdout.readline, ''):
