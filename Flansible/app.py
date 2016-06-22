@@ -28,6 +28,9 @@ import sys
 import json
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 from flansible_git import FlansibleGit
+from subprocess import Popen, PIPE
+from threading import Thread
+from Queue import Queue, Empty
 
 
 
@@ -352,29 +355,74 @@ class AnsibleTaskStatus(Resource):
 
 api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')
 
+def stream_watcher(identifier, stream, context):
+
+    for line in stream:
+        io_q.put((identifier, line))
+
+    if not stream.closed:
+        stream.close()
+
+def status_updater():
+    while True:
+        try:
+            # Block for 1 second.
+            item = io_q.get(True, 1)
+        except Empty:
+            # No output in either streams for a second. Are we done?
+            if proc.poll() is not None:
+                break
+        else:
+            identifier, line = item
+            print identifier + ':', line
+            update_state(state='PROGRESS',
+                          meta={'result': result})
+
+
 @celery.task(bind=True, soft_time_limit=task_timeout, time_limit=(task_timeout+10))
 def do_long_running_task(self, cmd):
     with app.app_context():
-        error_out = None
+        io_q = Queue()
+
+        has_error = False
         result = None
+        output = None
         self.update_state(state='PROGRESS',
                           meta={'result': result})
-        try:
-            result = subprocess.check_output([cmd], shell=True, stderr=error_out)
-        except Exception as e:
-            error_out = str(e)
+        
+        proc = Popen([cmd], stdout=PIPE, stderr=PIPE)
+        Thread(target=stream_watcher, name='stdout-watcher',
+                args=('STDOUT', proc.stdout, self)).start()
+        Thread(target=stream_watcher, name='stderr-watcher',
+                args=('STDERR', proc.stderr, self)).start()
+
+        while True:
+            try:
+                # Block for 1 second.
+                item = io_q.get(True, 1)
+            except Empty:
+                if proc.poll() is not None:
+                    #Task is done, end loop
+                    break
+            else:
+                identifier, line = item
+                if identifier == "STDERR":
+                    has_error = True
+                output = output + line
+                self.update_state(state='PROGRESS',
+                          meta={'output': output})
 
         self.update_state(state='FINISHED',
-                          meta={'result': error_out})
-        if error_out:
+                          meta={'result': output})
+        if has_error:
             #failure
             self.update_state(state='FAILED',
-                          meta={'result': error_out})
-            return {'result': error_out}
+                          meta={'output': output})
+            return {'result': output}
         else:
             if len(result) is 0:
                 result = "no output, maybe no matching hosts?"
-            return {'result': result}
+            return {'result': output}
 
 if __name__ == '__main__':
     app.run(debug=True, host=config.get("Default", "Flask_tcp_ip"), use_reloader=False, port=int(config.get("Default", "Flask_tcp_port")))
