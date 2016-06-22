@@ -352,7 +352,7 @@ class AnsibleTaskStatus(Resource):
 
 api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')
 
-@celery.task(bind=True, soft=task_timeout)
+@celery.task(bind=True, soft=task_timeout, hard=(task_timeout+10))
 def do_long_running_task(self, cmd):
     with app.app_context():
         error_out = None
