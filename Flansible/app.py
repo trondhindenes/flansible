@@ -405,7 +405,7 @@ def do_long_running_task(self, cmd):
             output = output + line
             self.update_state(state='PROGRESS', meta={'output': output,'description': "",'returncode': None})
 
-        if proc.stderr.readline
+        
         #Thread(target=stream_watcher, name='stdout-watcher',
         #        args=('STDOUT', proc.stdout)).start()
         #Thread(target=stream_watcher, name='stderr-watcher',
