@@ -83,7 +83,7 @@ against dev/test environments without having access to make changes to productio
 ### Usage: Ad-hoc commands
 Issue a POST to `http://<hostname>/api/ansiblecommand` with contenttype `Application/Json`.
 
-The body should contain the following (also, see the swagger spec mentioned above):
+The body should contain the following (for updated info, see the swagger spec mentioned above):
 ```json
 {
    "host_pattern": "localhost", 
@@ -101,7 +101,7 @@ where
 * extra_args: array of objects containing any extra vars
 
 ### Usage: Playbooks
-Issue a POST to `http://<hostname>/api/ansibleplaybook` with contenttype `Application/Json`.
+Issue a POST to `http://<hostname>/api/ansibleplaybook` with contenttype `application/Json`.
 
 This is an example of playbook execution:
 
@@ -117,12 +117,12 @@ Flansible will verify that the playbook dir/file exists before submitting the jo
 
 ### Usage: Getting status
 both ansibleplaybook and ansiblecommand will return a task_id value. That value can be used to check the 
-status of the job. This is done by issuing a GET to 
+status and output of the job. This is done by issuing a GET to 
 `http://<hostname>/api/ansibletaskstatus/<task_id>` with contenttype `Application/Json`.
 
 ### Usage: Getting output
-When the status reports something other than "PROGRESS", the following can be used to get the command/playbook's output: 
-status of the job. This is done by issuing a GET to 
+The output of the ansible command/playbook can be viewed live while the task is running, and afterwards.
+Issue a GET cal to:
 `http://<hostname>/api/ansibletaskoutput/<task_id>` with contenttype `Application/Json`.
 The output from this call should resemble what you see in bash when executing Ansible interactively.
 
