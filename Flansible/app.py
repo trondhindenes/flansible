@@ -413,18 +413,26 @@ def do_long_running_task(self, cmd):
         #        output = output + line
         #        self.update_state(state='PROGRESS',
         #                  meta={'result': output})
-        proc.poll()
+        return_code = proc.poll()
+        meta = {'output': output, 
+                    'returncode': proc.returncode,
+                    'description': "Celery ran the task, but ansible reported error"
+                }
         self.update_state(state='FINISHED',
-                          meta={'result': output})
-        if proc.returncode is not 0:
+                          meta=meta)
+        if return_code is not 0:
             #failure
+            meta = {'output': output, 
+                        'returncode': return_code,
+                        'description': "Celery ran the task, but ansible reported error"
+                    }
             self.update_state(state='FAILED',
-                          meta={'output': output, 'returncode': proc.returncode})
-            return {'result': output}
+                          meta=meta)
+            return meta
         else:
             if len(output) is 0:
                 output = "no output, maybe no matching hosts?"
-            return {'result': output}
+            return meta
 
 if __name__ == '__main__':
     app.run(debug=True, host=config.get("Default", "Flask_tcp_ip"), use_reloader=False, port=int(config.get("Default", "Flask_tcp_port")))
