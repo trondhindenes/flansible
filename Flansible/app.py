@@ -387,8 +387,8 @@ def do_long_running_task(self, cmd):
                           meta={'result': output})
         print(str.format("About to execute: {0}", cmd))
         proc = Popen([cmd], stdout=PIPE, stderr=PIPE, shell=True)
-        for c in iter(lambda: proc.stdout.read(1), ''):
-            print(str(c))
+        for line in iter(process.stdout.readline, ''):
+            print(str(line))
         #Thread(target=stream_watcher, name='stdout-watcher',
         #        args=('STDOUT', proc.stdout)).start()
         #Thread(target=stream_watcher, name='stderr-watcher',
