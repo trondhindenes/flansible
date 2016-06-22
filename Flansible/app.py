@@ -9,28 +9,26 @@ if platform.node() == 'thansible01':
         pass
 
 import os
-from datetime import datetime
-from flask import render_template
-from celery import Celery
-import subprocess
 import time
-from flask_restful import Resource, Api
-from ConfigParser import SafeConfigParser
-from flask import Flask, request, render_template, session, flash, redirect, url_for, jsonify
-from flask_httpauth import HTTPBasicAuth
-from celery import Celery
-import celery.events.state
-import subprocess
-import time
-from flask_restful import Resource, Api, reqparse, fields
-from flask_restful_swagger import swagger
 import sys
 import json
+from threading import Thread
+from subprocess import Popen, PIPE
+from Queue import Queue, Empty
+from datetime import datetime
+from ConfigParser import SafeConfigParser
+from flask import render_template
+from flask import Flask, request, render_template, session, flash, redirect, url_for, jsonify
+from flask_httpauth import HTTPBasicAuth
+from flask_restful import Resource, Api, reqparse, fields
+from flask_restful_swagger import swagger
+import celery.events.state
+from celery import Celery
+
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 from flansible_git import FlansibleGit
-from subprocess import Popen, PIPE
-from threading import Thread
-from Queue import Queue, Empty
+
+
 
 
 
@@ -355,7 +353,7 @@ class AnsibleTaskStatus(Resource):
 
 api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')
 
-def stream_watcher(identifier, stream, context):
+def stream_watcher(identifier, stream):
 
     for line in stream:
         io_q.put((identifier, line))
@@ -392,9 +390,9 @@ def do_long_running_task(self, cmd):
         
         proc = Popen([cmd], stdout=PIPE, stderr=PIPE)
         Thread(target=stream_watcher, name='stdout-watcher',
-                args=('STDOUT', proc.stdout, self)).start()
+                args=('STDOUT', proc.stdout)).start()
         Thread(target=stream_watcher, name='stderr-watcher',
-                args=('STDERR', proc.stderr, self)).start()
+                args=('STDERR', proc.stderr)).start()
 
         while True:
             try:
