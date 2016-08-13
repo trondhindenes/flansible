@@ -1,6 +1,6 @@
 echo kill screens if any
 killall screen || true
-cd ~/Flansible/Flansible
+cd /home/thadmin/flansible/
 echo start celery
 screen -d -m -s /bin/bash celery worker -A app.celery --loglevel=info
 echo start flower

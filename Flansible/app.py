@@ -1,7 +1,7 @@
 import platform
 
 #Visual studio remote debugger
-if platform.node() == 'thansible01':
+if platform.node() == 'ansible':
     try:
         import ptvsd
         ptvsd.enable_attach(secret='my_secret', address = ('0.0.0.0', 3000))
@@ -28,6 +28,10 @@ from celery import Celery
 
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 from flansible_git import FlansibleGit
+
+from test_route import test_route
+from git import git
+import celery_runner
 
 
 #Setup queue for celery
@@ -58,6 +62,8 @@ api = swagger.docs(Api(app), apiVersion='0.1')
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], )
 celery.control.time_limit('do_long_running_task', soft=900, hard=900, reply=True)
 celery.conf.update(app.config)
+
+runner = celery_runner.Runner(celery)
 
 inventory_access = []
 
@@ -300,6 +306,9 @@ class RunAnsiblePlaybook(Resource):
 
 
 api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
+
+api.add_resource(test_route, '/api/test')
+api.add_resource(git,'/api/git')
     
 class AnsibleTaskOutput(Resource):
     @swagger.operation(
@@ -401,70 +410,7 @@ def status_updater():
                           meta={'result': result})
 
 
-@celery.task(bind=True, soft_time_limit=task_timeout, time_limit=(task_timeout+10))
-def do_long_running_task(self, cmd):
-    with app.app_context():
-        
-        has_error = False
-        result = None
-        output = ""
-        self.update_state(state='PROGRESS',
-                          meta={'output': output, 
-                                'description': "",
-                                'returncode': None})
-        print(str.format("About to execute: {0}", cmd))
-        proc = Popen([cmd], stdout=PIPE, stderr=subprocess.STDOUT, shell=True)
-        for line in iter(proc.stdout.readline, ''):
-            print(str(line))
-            output = output + line
-            self.update_state(state='PROGRESS', meta={'output': output,'description': "",'returncode': None})
 
-        
-        #Thread(target=stream_watcher, name='stdout-watcher',
-        #        args=('STDOUT', proc.stdout)).start()
-        #Thread(target=stream_watcher, name='stderr-watcher',
-        #        args=('STDERR', proc.stderr)).start()
-
-        #while True:
-        #    print("Waiting for output")
-        #    try:
-        #        # Block for 1 second.
-        #        item = io_q.get(True, 0.3)
-        #    except Empty:
-        #        if proc.poll() is not None:
-        #            #Task is done, end loop
-        #            break
-        #    else:
-        #        identifier, line = item
-        #        print identifier + ':', line
-        #        if identifier == "STDERR":
-        #            has_error = True
-        #        output = output + line
-        #        self.update_state(state='PROGRESS',
-        #                  meta={'result': output})
-        return_code = proc.poll()
-        if return_code is 0:
-            meta = {'output': output, 
-                        'returncode': proc.returncode,
-                        'description': ""
-                    }
-            self.update_state(state='FINISHED',
-                              meta=meta)
-        elif return_code is not 0:
-            #failure
-            meta = {'output': output, 
-                        'returncode': return_code,
-                        'description': "Celery ran the task, but ansible reported error"
-                    }
-            self.update_state(state='FAILED',
-                          meta=meta)
-        if len(output) is 0:
-            output = "no output, maybe no matching hosts?"
-            meta = {'output': output, 
-                        'returncode': return_code,
-                        'description': "Celery ran the task, but ansible reported error"
-                    }
-        return meta
             
 
 if __name__ == '__main__':
