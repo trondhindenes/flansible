@@ -445,6 +445,18 @@ class git(Resource):
 api.add_resource(git, '/api/git')
 
 class Playbooks(Resource):
+    @swagger.operation(
+        notes='List ansible playbooks. Configure search root in config.ini',
+        nickname='listplaybooks',
+        responseMessages=[
+            {
+              "code": 200,
+              "message": "List of playbooks"
+            }
+          ]
+    )
+
+    @auth.login_required
     def get(self):
         yamlfiles = []
         for root, dirs, files in os.walk(playbook_root):
