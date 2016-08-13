@@ -1,7 +1,10 @@
 from flask_restful import Resource, Api
+from flask_restful import reqparse
 from flask_restful_swagger import swagger
+
 from flansible import app
 from flansible import api, app, celery, auth
+from flansible_git import FlansibleGit
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 import celery_runner
 
@@ -63,7 +66,7 @@ class git(Resource):
         if not reset:
             reset = False
 
-        task_result = update_git_repo(playbook_dir, remote_name, branch_name, reset)
+        task_result = FlansibleGit.update_git_repo(playbook_dir, remote_name, branch_name, reset)
         result = {'task_id': task_result.id}
         return result
 

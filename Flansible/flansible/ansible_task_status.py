@@ -21,7 +21,7 @@ class AnsibleTaskStatus(Resource):
     ])
     @auth.login_required
     def get(self, task_id):
-        task = do_long_running_task.AsyncResult(task_id)
+        task = celery_runner.do_long_running_task.AsyncResult(task_id)
         if task.state == 'PENDING':
             result = "Task not found"
             resp = app.make_response((result, 404))

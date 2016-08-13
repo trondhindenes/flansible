@@ -1,15 +1,12 @@
 import os
 from flask_restful import Resource, Api
-from flask_httpauth import HTTPBasicAuth
 from flask_restful_swagger import swagger
 from flansible import app
-from flansible import api, app, celery, playbook_root
+from flansible import api, app, celery, playbook_root, auth
+from flansible import verify_password, get_inventory_access
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 
 import celery_runner
-auth = HTTPBasicAuth()
-
-
 
 class Playbooks(Resource):
     @swagger.operation(

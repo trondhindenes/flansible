@@ -1,9 +1,12 @@
+import os
 from flask_restful import Resource, Api
 from flask_restful_swagger import swagger
+from flask_restful import reqparse
 from flansible import app
-from flansible import api, app, celery, auth
+from flansible import api, app, celery, auth, ansible_default_inventory, get_inventory_access, task_timeout
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 import celery_runner
+from flansible_git import FlansibleGit
 
 class RunAnsiblePlaybook(Resource):
     @swagger.operation(
@@ -51,8 +54,8 @@ class RunAnsiblePlaybook(Resource):
         do_update_git_repo = args['update_git_repo']
 
         if do_update_git_repo is True:
-            result = update_git_repo(playbook_dir, playbook)
-            task = do_long_running_task.AsyncResult(result.id)
+            result = FlansibleGit.update_git_repo(playbook_dir)
+            task = celery_runner.do_long_running_task.AsyncResult(result.id)
             while task.state == "PENDING" or task.state == "PROGRESS":
                 #waiting for finish
                 task = celery_runner.do_long_running_task.AsyncResult(result.id)
@@ -92,7 +95,7 @@ class RunAnsiblePlaybook(Resource):
 
 
         command = str.format("cd {0};ansible-playbook {1}{2}{3}", playbook_dir, playbook, become_string, inventory)
-        task_result = do_long_running_task.apply_async([command], soft=task_timeout, hard=task_timeout)
+        task_result = celery_runner.do_long_running_task.apply_async([command], soft=task_timeout, hard=task_timeout)
         result = {'task_id': task_result.id}
         return result
 
