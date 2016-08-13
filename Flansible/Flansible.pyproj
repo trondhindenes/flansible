@@ -23,6 +23,39 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="flansible\ansible_task_output.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="flansible\ansible_task_status.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="flansible\auth_helper.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="flansible\celery_runner.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="flansible\git.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="flansible\list_playbooks.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="flansible\run_ansible_command.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="flansible\run_ansible_playbook.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="flansible\util_classes.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="flansible\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="runserver.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="flansible_git.py">
       <SubType>Code</SubType>
     </Compile>
@@ -36,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="config.ini" />
+    <Content Include="flansible\config.ini" />
     <Content Include="Examples\app.wsgi" />
     <Content Include="Examples\python.conf" />
     <Content Include="Examples\README.md" />
@@ -46,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Examples\" />
+    <Folder Include="flansible\" />
     <Folder Include="Utils\" />
   </ItemGroup>
   <PropertyGroup>

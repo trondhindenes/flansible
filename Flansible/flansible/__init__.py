@@ -1,12 +1,5 @@
 import platform
 
-#Visual studio remote debugger
-if platform.node() == 'ansible':
-    try:
-        import ptvsd
-        ptvsd.enable_attach(secret='my_secret', address = ('0.0.0.0', 3000))
-    except:
-        pass
 
 import os
 import time
@@ -27,7 +20,6 @@ import celery.events.state
 from celery import Celery
 
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
-
 
 
 #Setup queue for celery
@@ -63,12 +55,37 @@ celery.conf.update(app.config)
 
 inventory_access = []
 
+def get_inventory_access(username, inventory):
+    if username == "admin":
+        return True
+    result = False
+    with open("rbac.json") as rbac_file:
+        rbac_data = json.load(rbac_file)
+    user_list = rbac_data['rbac']
+    for user in user_list:
+        if user['user'] == username:
+            inventory_list = user['inventories']
+            if inventory in inventory_list:
+                result = True
+    return result
 
-  
-    
+@auth.verify_password
+def verify_password(username, password):
+    result = False
+    with open("rbac.json") as rbac_file:
+        rbac_data = json.load(rbac_file)
+    user_list = rbac_data['rbac']
+    for user in user_list:
+        if user['user'] == username:
+            if user['password'] == password:
+                result = True
+                inventory_access = user['inventories']
+    return result
 
-
-            
-
-if __name__ == '__main__':
-    app.run(debug=True, host=config.get("Default", "Flask_tcp_ip"), use_reloader=False, port=int(config.get("Default", "Flask_tcp_port")))
+#routes
+import flansible.run_ansible_command
+import flansible.run_ansible_playbook
+import flansible.ansible_task_output
+import flansible.ansible_task_status
+import flansible.git
+import flansible.list_playbooks
