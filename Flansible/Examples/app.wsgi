@@ -3,7 +3,7 @@ import sys
 import site
 
 #This is an example config using a virtualenv called "python"
-#This file goes in the root app directory (same folder as app.py)
+#This file goes in the root app directory (same folder as runserver.py)
 
 # Add the site-packages of the chosen virtualenv to work with
 site.addsitedir('/var/www/python/python/lib/python2.7/site-packages')

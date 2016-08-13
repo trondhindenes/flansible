@@ -34,7 +34,7 @@ Setup tested on Ubuntu 14.04
 
 from the Flansible/Flansible directory (where the .py files live), run the following (either using [screen](http://aperiodic.net/screen/start) or in separate terminals):
 
-`celery worker -A app.celery --loglevel=info` (this starts the celery worker which will actually execute the things)
+`celery worker -A flansible.celery --loglevel=info` (this starts the celery worker which will actually execute the things)
 
 `python app.py` (this starts the actual webserver. You're free to replace the built-in flask server with something else)
 
