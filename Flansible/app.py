@@ -27,11 +27,7 @@ import celery.events.state
 from celery import Celery
 
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
-from flansible_git import FlansibleGit
 
-from test_route import test_route
-from git import git
-import celery_runner
 
 
 #Setup queue for celery
@@ -55,6 +51,8 @@ except:
 app.config['CELERY_BROKER_URL'] = config.get("Default", "CELERY_BROKER_URL")
 app.config['CELERY_RESULT_BACKEND'] = config.get("Default", "CELERY_RESULT_BACKEND")
 str_task_timeout = config.get("Default", "CELERY_TASK_TIMEOUT")
+playbook_root = config.get("Default", "playbook_root")
+playbook_filter = config.get("Default", "playbook_filter")
 task_timeout = int(str_task_timeout)
 
 api = swagger.docs(Api(app), apiVersion='0.1')
@@ -62,8 +60,6 @@ api = swagger.docs(Api(app), apiVersion='0.1')
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], )
 celery.control.time_limit('do_long_running_task', soft=900, hard=900, reply=True)
 celery.conf.update(app.config)
-
-runner = celery_runner.Runner(celery)
 
 inventory_access = []
 
@@ -306,9 +302,6 @@ class RunAnsiblePlaybook(Resource):
 
 
 api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
-
-api.add_resource(test_route, '/api/test')
-api.add_resource(git,'/api/git')
     
 class AnsibleTaskOutput(Resource):
     @swagger.operation(
@@ -377,15 +370,105 @@ class AnsibleTaskStatus(Resource):
                     result_obj = {'Status': "SUCCESS", 
                                   'description': description}
                 else:
-                    result_obj = {'Status': "ANSIBLEFAILURE",
+                    result_obj = {'Status': "FLANSIBLE_TASK_FAILURE",
                                   'description': description,
                                   'returncode': return_code}
             except:
-                result_obj = {'Status': "CELERYFAILURE"}
+                result_obj = {'Status': "CELERY_FAILURE"}
 
         return  result_obj
 
 api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')
+
+class git(Resource):
+    @swagger.operation(
+    notes='Update git repo on disk',
+    nickname='updategit',
+    parameters=[
+        {
+        "name": "playbook_dir",
+        "description": "The git dir to update",
+        "required": True,
+        "allowMultiple": False,
+        "dataType": 'string',
+        "paramType": "body"
+        },
+        {
+        "name": "remote_name",
+        "description": "git remote name. defaults to origin",
+        "required": False,
+        "allowMultiple": False,
+        "dataType": 'string',
+        "paramType": "body"
+        },
+        {
+        "name": "branch_name",
+        "description": "git branch name. defaults to master",
+        "required": False,
+        "allowMultiple": False,
+        "dataType": 'string',
+        "paramType": "body"
+        },
+        {
+        "name": "reset",
+        "description": "perform a hard reset on the repo",
+        "required": False,
+        "allowMultiple": False,
+        "dataType": 'bool',
+        "paramType": "body"
+        },
+    ])
+    @auth.login_required
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('playbook_dir', type=str, help='folder where playbook file resides', required=True)
+        parser.add_argument('remote_name', type=str, help='remote name', required=False)
+        parser.add_argument('branch_name', type=str, help='branch name', required=False)
+        parser.add_argument('reset', type=bool, help='hard reset', required=False)
+        args = parser.parse_args()
+        playbook_dir = args['playbook_dir']
+        remote_name = args['remote_name']
+        branch_name = args['branch_name']
+        reset = args['reset']
+
+        if not remote_name:
+            remote_name = 'origin'
+        if not branch_name:
+            branch_name = 'master'
+        if not reset:
+            reset = False
+
+        task_result = update_git_repo(playbook_dir, remote_name, branch_name, reset)
+        result = {'task_id': task_result.id}
+        return result
+
+api.add_resource(git, '/api/git')
+
+class Playbooks(Resource):
+    def get(self):
+        yamlfiles = []
+        for root, dirs, files in os.walk(playbook_root):
+            for name in files:
+                if name.endswith((".yaml", ".yml")):
+                    fileobj = {'name':name, 'parent':root}
+                    yamlfiles.append(fileobj)
+        
+        returnedfiles = []
+        for fileobj in yamlfiles:
+            if 'group_vars' in fileobj['parent']:
+                pass
+            elif fileobj['parent'].endswith('handlers'):
+                pass
+            elif fileobj['parent'].endswith('vars'):
+                pass
+            else:
+                returnedfiles.append(fileobj)
+
+        return returnedfiles
+
+
+api.add_resource(Playbooks, '/api/playbooks')
+    
 
 def stream_watcher(identifier, stream):
     for line in stream:
@@ -409,8 +492,80 @@ def status_updater():
             update_state(state='PROGRESS',
                           meta={'result': result})
 
+def update_git_repo(playbook_dir, remote_name='origin', branch_name='master', reset=False):
+
+    if reset is False:
+        command = str.format("cd {0};git pull {1} {2}", playbook_dir, remote_name, branch_name)
+    else:
+        command = str.format("cd {0};git fetch {1} {2};git reset --hard {1}/{2};git pull {1} {2}", playbook_dir, remote_name, branch_name)
+    task_result = do_long_running_task.apply_async([command, 'git'], soft=task_timeout, hard=task_timeout)
+    return task_result
 
 
+@celery.task(bind=True, soft_time_limit=task_timeout, time_limit=(task_timeout+10))
+def do_long_running_task(self, cmd, type='Ansible'):
+    with app.app_context():
+        
+        has_error = False
+        result = None
+        output = ""
+        self.update_state(state='PROGRESS',
+                          meta={'output': output, 
+                                'description': "",
+                                'returncode': None})
+        print(str.format("About to execute: {0}", cmd))
+        proc = Popen([cmd], stdout=PIPE, stderr=subprocess.STDOUT, shell=True)
+        for line in iter(proc.stdout.readline, ''):
+            print(str(line))
+            output = output + line
+            self.update_state(state='PROGRESS', meta={'output': output,'description': "",'returncode': None})
+
+        
+        #Thread(target=stream_watcher, name='stdout-watcher',
+        #        args=('STDOUT', proc.stdout)).start()
+        #Thread(target=stream_watcher, name='stderr-watcher',
+        #        args=('STDERR', proc.stderr)).start()
+
+        #while True:
+        #    print("Waiting for output")
+        #    try:
+        #        # Block for 1 second.
+        #        item = io_q.get(True, 0.3)
+        #    except Empty:
+        #        if proc.poll() is not None:
+        #            #Task is done, end loop
+        #            break
+        #    else:
+        #        identifier, line = item
+        #        print identifier + ':', line
+        #        if identifier == "STDERR":
+        #            has_error = True
+        #        output = output + line
+        #        self.update_state(state='PROGRESS',
+        #                  meta={'result': output})
+        return_code = proc.poll()
+        if return_code is 0:
+            meta = {'output': output, 
+                        'returncode': proc.returncode,
+                        'description': ""
+                    }
+            self.update_state(state='FINISHED',
+                              meta=meta)
+        elif return_code is not 0:
+            #failure
+            meta = {'output': output, 
+                        'returncode': return_code,
+                        'description': str.format("Celery ran the task, but {0} reported error", type)
+                    }
+            self.update_state(state='FAILED',
+                          meta=meta)
+        if len(output) is 0:
+            output = "no output, maybe no matching hosts?"
+            meta = {'output': output, 
+                        'returncode': return_code,
+                        'description': str.format("Celery ran the task, but {0} reported error", type)
+                    }
+        return meta
             
 
 if __name__ == '__main__':
