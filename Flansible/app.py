@@ -260,10 +260,18 @@ class RunAnsiblePlaybook(Resource):
         playbook = args['playbook']
         become = args['become']
         inventory = args['inventory']
-        update_git_repo = args['update_git_repo']
+        do_update_git_repo = args['update_git_repo']
 
-        if update_git_repo is True:
-            playbook_dir, playbook = FlansibleGit.update_git_repo(playbook_dir, playbook)
+        if do_update_git_repo is True:
+            result = update_git_repo(playbook_dir, playbook)
+            task = do_long_running_task.AsyncResult(result.id)
+            while task.state == "PENDING" or task.state == "PROGRESS":
+                #waiting for finish
+                task = do_long_running_task.AsyncResult(result.id)
+            if task.result['returncode'] != 0:
+                #git update failed
+                resp = app.make_response((str.format("Failed to update git repo: {0}", playbook_dir), 404))
+                return resp
 
         curr_user = auth.username()
         
