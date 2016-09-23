@@ -51,6 +51,7 @@ class RunAnsiblePlaybook(Resource):
         playbook = args['playbook']
         become = args['become']
         inventory = args['inventory']
+        extra_vars = args['extra_vars']
         do_update_git_repo = args['update_git_repo']
 
         if do_update_git_repo is True:
@@ -93,11 +94,23 @@ class RunAnsiblePlaybook(Resource):
         else:
             become_string = ''
 
+        extra_vars_string = ''
+        if extra_vars:
+            counter = 1
+            extra_vars_string += ' -e"'
+            for key in extra_vars.keys():
+                if counter < len(extra_vars):
+                    spacer = " "
+                else:
+                    spacer = ""
+                opt_string = str.format("{0}={1}{2}",key,extra_vars[key], spacer)
+                extra_vars_string += opt_string
+                counter += 1
+            extra_vars_string += '"'
 
-        command = str.format("cd {0};ansible-playbook {1}{2}{3}", playbook_dir, playbook, become_string, inventory)
+        command = str.format("cd {0};ansible-playbook {1}{2}{3}{4}", playbook_dir, playbook, become_string, inventory, extra_vars_string)
         task_result = celery_runner.do_long_running_task.apply_async([command], soft=task_timeout, hard=task_timeout)
         result = {'task_id': task_result.id}
         return result
-
 
 api.add_resource(RunAnsiblePlaybook, '/api/ansibleplaybook')
