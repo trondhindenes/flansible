@@ -40,8 +40,8 @@ try:
 except:
     ansible_default_inventory = '/etc/ansible/hosts'
 
-app.config['CELERY_BROKER_URL'] = config.get("Default", "CELERY_BROKER_URL")
-app.config['CELERY_RESULT_BACKEND'] = config.get("Default", "CELERY_RESULT_BACKEND")
+app.config['broker_url'] = config.get("Default", "CELERY_BROKER_URL")
+app.config['result_backend'] = config.get("Default", "CELERY_RESULT_BACKEND")
 str_task_timeout = config.get("Default", "CELERY_TASK_TIMEOUT")
 playbook_root = config.get("Default", "playbook_root")
 playbook_filter = config.get("Default", "playbook_filter")
@@ -49,7 +49,7 @@ task_timeout = int(str_task_timeout)
 
 api = swagger.docs(Api(app), apiVersion='0.1')
 
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], )
+celery = Celery(app.name, broker=app.config['broker_url'], backend=app.config['result_backend'])
 celery.control.time_limit('do_long_running_task', soft=900, hard=900, reply=True)
 celery.conf.update(app.config)
 
