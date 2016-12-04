@@ -4,3 +4,4 @@
 .vs/
 .idea/
 .vagrant/
+*.retry
