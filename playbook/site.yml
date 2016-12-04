@@ -12,18 +12,21 @@
         cache_valid_time: 3600
         name: "{{ item }}"
 
+
+#      become: yes
+#      with_items:
+#        - celery
+#        - Flask
+#        - Flask-HTTPAuth
+#        - Flask-RESTful
+#        - flask-restful-swagger
+#        - flower
+#        - redis
     - name: install packages (pip)
       become: yes
-      with_items:
-        - celery
-        - Flask
-        - Flask-HTTPAuth
-        - Flask-RESTful
-        - flask-restful-swagger
-        - flower
-        - redis
       pip:
-        name: "{{ item }}"
+        requirements: /vagrant/Flansible/requirements.txt
+
 
 
 

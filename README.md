@@ -36,9 +36,17 @@ from the Flansible/Flansible directory (where the .py files live), run the follo
 
 `celery worker -A flansible.celery --loglevel=info` (this starts the celery worker which will actually execute the things)
 
-`python app.py` (this starts the actual webserver. You're free to replace the built-in flask server with something else)
+`python runserver.py` (this starts the actual webserver. You're free to replace the built-in flask server with something else)
 
 OPTIONAL: `flower --broker=redis://localhost:6379/0` (this starts the flower web gui, which gives provides information for running tasks. Replace the value of `--broker` with your own connection string for the redis/rabbitmq data store). Flower will be available on `http://<hostname>:5555`.
+
+### Usage: Vagrant
+To test the solution with vagrant, you can run `vagrant up` from the root of the repo directory. I haven't set up the apache thingy yet, so you'll have to run the following inside vagrant (by using `vagrant ssh`) after the box comes online:
+`cd /opt/flansible/Flansible`
+`celery worker -A flansible.celery --loglevel=info`
+`python runserver.py`
+
+you can now interact with the flansible rest api using `http://localhost:3000/api`.
 
 ### Usage: General
 Flansible comes with swagger documentation, which can be reached at
