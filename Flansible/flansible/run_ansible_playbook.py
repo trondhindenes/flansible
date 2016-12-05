@@ -7,6 +7,7 @@ from flansible import api, app, celery, auth, ansible_default_inventory, get_inv
 from ModelClasses import AnsibleCommandModel, AnsiblePlaybookModel, AnsibleRequestResultModel, AnsibleExtraArgsModel
 import celery_runner
 from flansible_git import FlansibleGit
+import json
 
 class RunAnsiblePlaybook(Resource):
     @swagger.operation(
@@ -15,36 +16,39 @@ class RunAnsiblePlaybook(Resource):
         responseClass=AnsibleRequestResultModel.__name__,
         parameters=[
             {
-              "name": "body",
-              "description": "Inut object",
-              "required": True,
-              "allowMultiple": False,
-              "dataType": AnsiblePlaybookModel.__name__,
-              "paramType": "body"
+                "name": "body",
+                "description": "Inut object",
+                "required": True,
+                "allowMultiple": False,
+                "dataType": AnsiblePlaybookModel.__name__,
+                "paramType": "body"
             }
           ],
         responseMessages=[
             {
-              "code": 200,
-              "message": "Ansible playbook started"
+                "code": 200,
+                "message": "Ansible playbook started"
             },
             {
-              "code": 400,
-              "message": "Invalid input"
+                "code": 400,
+                "message": "Invalid input"
             }
           ]
     )
     @auth.login_required
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('playbook_dir', type=str, help='folder where playbook file resides', required=True)
+        parser.add_argument('playbook_dir',
+                            type=str, help='folder where playbook file resides', required=True)
         parser.add_argument('playbook', type=str, help='name of the playbook', required=True)
         parser.add_argument('inventory', type=str, help='path to inventory', required=False,)
         parser.add_argument('extra_vars', type=dict, help='extra vars', required=False)
         parser.add_argument('forks', type=int, help='forks', required=False)
         parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
         parser.add_argument('become', type=bool, help='run with become', required=False)
-        parser.add_argument('update_git_repo', type=bool, help='Set to true to update git repo prior to executing', required=False)
+        parser.add_argument('update_git_repo', type=bool,
+                            help='Set to true to update git repo prior to executing',
+                            required=False)
         args = parser.parse_args()
 
         playbook_dir = args['playbook_dir']
@@ -62,13 +66,14 @@ class RunAnsiblePlaybook(Resource):
                 task = celery_runner.do_long_running_task.AsyncResult(result.id)
             if task.result['returncode'] != 0:
                 #git update failed
-                resp = app.make_response((str.format("Failed to update git repo: {0}", playbook_dir), 404))
+                resp = app.make_response((str.format("Failed to update git repo: {0}",
+                                                     playbook_dir), 404))
                 return resp
 
         curr_user = auth.username()
-        
+
         playbook_full_path = playbook_dir + "/" + playbook
-        playbook_full_path = playbook_full_path.replace("//","/")
+        playbook_full_path = playbook_full_path.replace("//", "/")
 
         if not os.path.exists(playbook_dir):
             resp = app.make_response((str.format("Directory not found: {0}", playbook_dir), 404))
@@ -100,17 +105,7 @@ class RunAnsiblePlaybook(Resource):
 
         extra_vars_string = ''
         if extra_vars:
-            counter = 1
-            extra_vars_string += ' -e"'
-            for key in extra_vars.keys():
-                if counter < len(extra_vars):
-                    spacer = " "
-                else:
-                    spacer = ""
-                opt_string = str.format("{0}={1}{2}",key,extra_vars[key], spacer)
-                extra_vars_string += opt_string
-                counter += 1
-            extra_vars_string += '"'
+            extra_vars_string = " --extra-vars '%s'" % (json.dumps(extra_vars))
 
         command = str.format("cd {0};ansible-playbook {1}{2}{3}{4}", playbook_dir, playbook, become_string, inventory, extra_vars_string)
         task_result = celery_runner.do_long_running_task.apply_async([command], soft=task_timeout, hard=task_timeout)
