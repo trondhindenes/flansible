@@ -1,0 +1,6 @@
+---
+- hosts: localhost
+  tasks:
+    - name: test thhing
+      debug:
+        msg: "{{ arg_name }}"

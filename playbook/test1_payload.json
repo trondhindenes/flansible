@@ -1,0 +1,9 @@
+{
+  "playbook": "test1.yml",
+  "playbook_dir": "/vagrant/playbook",
+   "extra_vars": [
+    {
+      "arg_name": "stuff"
+    }
+  ]
+}
