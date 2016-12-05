@@ -87,6 +87,10 @@ class RunAnsiblePlaybook(Resource):
                 resp = app.make_response((str.format("User does not have access to inventory {0}", inventory), 403))
                 return resp
 
+        if not os.path.exists(inventory):
+            resp = app.make_response((str.format("Inventory path not found: {0}", playbook_full_path), 404))
+            return resp
+
         inventory = str.format(" -i {0}", inventory)
 
         if become:
