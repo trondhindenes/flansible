@@ -10,7 +10,7 @@ Flansible is written in [Flask](http://flask.pocoo.org/), and uses [celery](http
 #### Required python packages with tested versions (newer version should be fine):
 ```bash
 ansible==2.1.0.0
-celery==3.1.23
+celery==4.0.0
 Flask==0.10.1
 Flask-HTTPAuth==3.1.2
 Flask-RESTful==0.3.5
@@ -42,9 +42,13 @@ OPTIONAL: `flower --broker=redis://localhost:6379/0` (this starts the flower web
 
 ### Usage: Vagrant
 To test the solution with vagrant, you can run `vagrant up` from the root of the repo directory. I haven't set up the apache thingy yet, so you'll have to run the following inside vagrant (by using `vagrant ssh`) after the box comes online:
+
 `cd /opt/flansible/Flansible`
-`celery worker -A flansible.celery --loglevel=info`
-`python runserver.py`
+
+`celery worker -A flansible.celery --loglevel=info` (use screen to run celery in a non-blocking way)
+
+`python runserver.py` (use screen to run the app in a non-blocking way)
+
 
 you can now interact with the flansible rest api using `http://localhost:3000/api`.
 
