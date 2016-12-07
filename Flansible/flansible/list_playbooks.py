@@ -22,19 +22,20 @@ class Playbooks(Resource):
     @auth.login_required
     def get(self):
         yamlfiles = []
+        print("listing playbooks in " + playbook_root)
         for root, dirs, files in os.walk(playbook_root):
             for name in files:
                 if name.endswith((".yaml", ".yml")):
-                    fileobj = {'name':name, 'parent':root}
+                    fileobj = {'playbook': name, 'playbook_dir': root}
                     yamlfiles.append(fileobj)
         
         returnedfiles = []
         for fileobj in yamlfiles:
-            if 'group_vars' in fileobj['parent']:
+            if 'group_vars' in fileobj['playbook_dir']:
                 pass
-            elif fileobj['parent'].endswith('handlers'):
+            elif fileobj['playbook_dir'].endswith('handlers'):
                 pass
-            elif fileobj['parent'].endswith('vars'):
+            elif fileobj['playbook_dir'].endswith('vars'):
                 pass
             else:
                 returnedfiles.append(fileobj)
