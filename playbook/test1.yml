@@ -3,4 +3,7 @@
   tasks:
     - name: test thhing
       debug:
-        msg: "{{ arg_name }}"
+        msg: "{{ pacman }}"
+    - name: test thhing2
+      debug:
+        msg: "{{ ghosts | to_nice_json }}"

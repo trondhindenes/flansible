@@ -37,13 +37,12 @@ class AnsiblePlaybookModel:
         'playbook_dir': fields.String,
         'playbook': fields.String,
         'inventory': fields.String,
-        'extra_vars': fields.List(fields.Nested(AnsibleExtraArgsModel.resource_fields)),
+        'extra_vars': fields.Raw,
         'forks' : fields.Integer,
         'verbose_level': fields.Integer,
         'become': fields.Boolean,
         'update_git_repo': fields.Boolean,
     }
-
 
 
 @swagger.model

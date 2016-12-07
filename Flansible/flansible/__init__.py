@@ -55,6 +55,7 @@ celery.conf.update(app.config)
 
 inventory_access = []
 
+
 def get_inventory_access(username, inventory):
     if username == "admin":
         return True
@@ -68,6 +69,7 @@ def get_inventory_access(username, inventory):
             if inventory in inventory_list:
                 result = True
     return result
+
 
 @auth.verify_password
 def verify_password(username, password):

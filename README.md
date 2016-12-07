@@ -43,7 +43,7 @@ OPTIONAL: `flower --broker=redis://localhost:6379/0` (this starts the flower web
 ### Usage: Vagrant
 To test the solution with vagrant, you can run `vagrant up` from the root of the repo directory. I haven't set up the apache thingy yet, so you'll have to run the following inside vagrant (by using `vagrant ssh`) after the box comes online:
 
-`cd /opt/flansible/Flansible`
+`cd /vagrant/Flansible`
 
 `celery worker -A flansible.celery --loglevel=info` (use screen to run celery in a non-blocking way)
 
