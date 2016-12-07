@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  tasks:
+    - name: test thhing
+      shell: "{{ my_command }}"
+      register: out
+    - name: print out
+      debug:
+        msg: "{{ out }}"

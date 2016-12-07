@@ -1,0 +1,8 @@
+  {
+    "playbook": "test2.yml",
+    "playbook_dir": "/vagrant/playbook/",
+    "extra_vars": {
+		"my_command": "/bin/echo 'hello world'",
+		"hosts": "server1.example.com"
+	}
+  }
