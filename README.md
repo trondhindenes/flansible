@@ -7,6 +7,9 @@ Flansible is a very simple rest api for executing Ansible ad-hoc-commands and pl
 
 Flansible is written in [Flask](http://flask.pocoo.org/), and uses [celery](http://www.celeryproject.org/) for async task execution and optionally [flower](http://flower.readthedocs.io/en/latest/features.html) for real-time monitoring of celery.
 
+#### Credits
+Joerg Lehmann: Lots of feedback and help
+
 #### Required python packages with tested versions (newer version should be fine):
 ```bash
 ansible==2.1.0.0
