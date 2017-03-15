@@ -1,0 +1,65 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Make sure target dir exists
+      become: yes
+      file:
+        path: /var/www/flansible
+        state: directory
+
+    - name: create flansible user
+      become: yes
+      user:
+        name: flansible
+
+    - name: Make sure target dir exists
+      become: yes
+      file:
+        path: /home/flansible
+        state: directory
+
+    - name: Clone Flansible
+      become: yes
+      git:
+        repo: https://github.com/ericdong66/flansible.git
+        dest: /home/flansible
+
+    - name: Configure wsgi file
+      become: yes
+      template:
+        src: app.wsgi
+        dest: /home/flansible/Flansible/app.wsgi
+
+    - name: enable wsgi in apache2
+      become: yes
+      apache2_module:
+        state: present
+        name: wsgi
+      notify:
+        - restart apache
+
+    - name: make wsgi executable
+      become: yes
+      acl:
+        name: /home/flansible/Flansible/app.wsgi
+        entity: flansible
+        etype: user
+        permissions: "rwx"
+      notify:
+        - restart apache
+
+    - name: Configure apache app file
+      become: yes
+      template:
+        src: site.xml
+        dest: /etc/apache2/sites-available/flansible.conf
+      notify:
+        - restart apache
+
+  handlers:
+    - name: restart apache
+      become: yes
+      service:
+        name: apache2
+        state: restarted
+
