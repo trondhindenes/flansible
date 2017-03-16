@@ -41,9 +41,9 @@ class AnsibleTaskStatus(Resource):
                     result_obj = {'Status': "FLANSIBLE_TASK_FAILURE",
                                   'description': description,
                                   'returncode': return_code}
-            except:
-                result_obj = {'Status': "CELERY_FAILURE"}
+            except Exception as e:
+                result_obj = {'Status': "CELERY_FAILURE: %s" % str(e)}
 
-        return  result_obj
+        return result_obj
 
 api.add_resource(AnsibleTaskStatus, '/api/ansibletaskstatus/<string:task_id>')

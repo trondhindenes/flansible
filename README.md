@@ -159,7 +159,14 @@ The output from this call should resemble what you see in bash when executing An
 ![alt text](http://s33.postimg.org/fq2hivpe7/2016_06_09_03_20_49_Swagger_UI.png "Swagger spec")
 
 
+### how it works in docker
+vagrant ssh
+docker-compose  -f docker-compose.yml build
+docker-compose  -f docker-compose.yml up -d
+sudo docker exec -it vagrant_flansible_1 bash
+ansible-playbook  /home/flansible/playbook/site-docker.yml
 
-
-
+cd /home/flansible/Flansible; python runserver.py
+cd /home/flansible/Flansible; C_FORCE_ROOT=1 celery worker -A flansible.celery --loglevel=info
+flower --broker=redis://localhost:6379/0
 

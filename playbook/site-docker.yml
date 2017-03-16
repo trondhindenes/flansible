@@ -1,5 +1,6 @@
 ---
 - hosts: localhost
+  connection: local
   tasks:
     - name: Make sure target dir exists
       become: yes
@@ -11,18 +12,7 @@
       become: yes
       user:
         name: flansible
-
-    - name: Make sure target dir exists
-      become: yes
-      file:
-        path: /home/flansible
-        state: directory
-
-    - name: Clone Flansible
-      become: yes
-      git:
-        repo: https://github.com/ericdong66/flansible.git
-        dest: /home/flansible
+        uid: 1000
 
     - name: Configure wsgi file
       become: yes
@@ -63,3 +53,14 @@
         name: apache2
         state: restarted
 
+    - name: restart redis
+      become: yes
+      service:
+        name: redis-server
+        state: restarted
+
+    - name: restart ssh
+      become: yes
+      service:
+        name: ssh
+        state: restarted

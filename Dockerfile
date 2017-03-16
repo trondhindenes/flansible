@@ -9,15 +9,16 @@ RUN apt-get update && \
                        libssl-dev make libxml2-dev libxslt1-dev acl
 
 RUN pip install git+git://github.com/ansible/ansible.git@devel
-RUN pip install -r requirements.txt
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 
-RUN echo '[local]\nlocalhost\n' > /etc/ansible/hosts
+RUN echo '[local]\nlocalhost ansible_connection=ssh ansible_ssh_user=root ansible_ssh_pass=admin\n' > /etc/ansible/hosts
 RUN sed -i 's/#host_key_checking/host_key_checking/g' /etc/ansible/ansible.cfg
 
 # https://docs.docker.com/engine/examples/running_ssh_service/
 RUN mkdir /var/run/sshd
 RUN echo 'root:admin' | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 # SSH login fix. Otherwise user is kicked off after login
 RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
