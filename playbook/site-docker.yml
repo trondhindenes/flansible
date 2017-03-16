@@ -25,8 +25,6 @@
       apache2_module:
         state: present
         name: wsgi
-      notify:
-        - restart apache
 
     - name: make wsgi executable
       become: yes
@@ -35,18 +33,13 @@
         entity: flansible
         etype: user
         permissions: "rwx"
-      notify:
-        - restart apache
 
     - name: Configure apache app file
       become: yes
       template:
         src: site.xml
         dest: /etc/apache2/sites-available/flansible.conf
-      notify:
-        - restart apache
 
-  handlers:
     - name: restart apache
       become: yes
       service:
