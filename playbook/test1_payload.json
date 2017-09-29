@@ -1,5 +1,0 @@
-{
-  "playbook": "test1.yml",
-  "playbook_dir": "/vagrant/playbook",
-   "extra_vars": {"pacman":"mrs","ghosts":["inky","pinky","clyde","sue"]}
-}
