@@ -1,0 +1,51 @@
+---
+version: '2'
+
+services:
+
+  # == CodeBase
+  #
+  base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${USER}/flansible:latest
+
+
+  # == App
+  #
+  flansible:
+    extends:
+      service: base
+    working_dir: /app
+    command: "python runserver.py"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Flansible:/app
+    depends_on:
+      - redis
+
+  worker:
+    extends:
+      service: base
+    command: "celery worker -A flansible.celery --loglevel=debug"
+    volumes:
+      - ./Flansible:/app
+    depends_on:
+      - redis
+
+  dashboard:
+    extends:
+      service: base
+    command: "flower --broker=redis://redis:6379/0"
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+
+
+  # == DataStore
+  #
+  redis:
+    image: redis

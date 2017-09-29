@@ -1,0 +1,9 @@
+{
+   "host_pattern": "127.0.0.1",
+    "module":  "find",
+    "module_args":  {
+        "paths":  "/tmp",
+        "age":  "2d",
+        "recurse" : true
+    }
+}
