@@ -1,0 +1,59 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Make sure target dir exists
+      become: yes
+      file:
+        path: /var/www/flansible
+        state: directory
+
+    - name: create flansible user
+      become: yes
+      user:
+        name: flansible
+        uid: 1000
+
+    - name: Configure wsgi file
+      become: yes
+      template:
+        src: app.wsgi
+        dest: /home/flansible/Flansible/app.wsgi
+
+    - name: enable wsgi in apache2
+      become: yes
+      apache2_module:
+        state: present
+        name: wsgi
+
+    - name: make wsgi executable
+      become: yes
+      acl:
+        name: /home/flansible/Flansible/app.wsgi
+        entity: flansible
+        etype: user
+        permissions: "rwx"
+
+    - name: Configure apache app file
+      become: yes
+      template:
+        src: site.xml
+        dest: /etc/apache2/sites-available/flansible.conf
+
+    - name: restart apache
+      become: yes
+      service:
+        name: apache2
+        state: restarted
+
+    - name: restart redis
+      become: yes
+      service:
+        name: redis-server
+        state: restarted
+
+    - name: restart ssh
+      become: yes
+      service:
+        name: ssh
+        state: restarted
