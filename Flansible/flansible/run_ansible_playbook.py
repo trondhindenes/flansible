@@ -45,6 +45,7 @@ class RunAnsiblePlaybook(Resource):
         parser.add_argument('extra_vars', type=dict, help='extra vars', required=False)
         parser.add_argument('forks', type=int, help='forks', required=False)
         parser.add_argument('verbose_level', type=int, help='verbose level, 1-4', required=False)
+        parser.add_argument('vault_file', type=str, help='vault file location', required=False)
         parser.add_argument('become', type=bool, help='run with become', required=False)
         parser.add_argument('update_git_repo', type=bool,
                             help='Set to true to update git repo prior to executing',
@@ -56,6 +57,7 @@ class RunAnsiblePlaybook(Resource):
         become = args['become']
         inventory = args['inventory']
         extra_vars = args['extra_vars']
+        vault_file = args['vault_file']
         do_update_git_repo = args['update_git_repo']
 
         if do_update_git_repo is True:
@@ -108,7 +110,10 @@ class RunAnsiblePlaybook(Resource):
             #extra_vars_string = str.format("  --extra-vars \'{0}\'", (json.dumps(extra_vars)))
             extra_vars_string = " --extra-vars '%s'" % (json.dumps(extra_vars).replace("'", "'\\''"))
 
-        command = str.format("cd {0};ansible-playbook {1}{2}{3}{4}", playbook_dir, playbook, become_string, inventory, extra_vars_string)
+        if vault_file:
+            vault_file_string = " --vault-password-file '%s'" % (vault_file)
+
+        command = str.format("cd {0};ansible-playbook {1}{2}{3}{4}{5}", playbook_dir, playbook, become_string, inventory, extra_vars_string, vault_file_string)
         task_result = celery_runner.do_long_running_task.apply_async([command], soft=task_timeout, hard=task_timeout)
         result = {'task_id': task_result.id}
         return result
