@@ -23,7 +23,7 @@ redis==2.10.5
 ```
 
 #### Other things:
-Celery requires a datastore, either Redis or RabbitMQ.
+Celery requires a running datastore, either Redis or RabbitMQ - flansible does not configure this, and expects Redis or RabbitMQ to already be running and accessible.
 
 #### Configuration
 The config.ini file should be pretty self-explanatory. It's probably a good idea to remove lines 5-10 in app.py, as that's only a debug definition which probably won't make sense to you.
